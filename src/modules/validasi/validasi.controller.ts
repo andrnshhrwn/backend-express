@@ -4,21 +4,28 @@ import { success } from "../../shared/http/response";
 import { validasiService } from "./validasi.service";
 import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
 
+function getValidasiId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(400, "INVALID_VALIDASI_ID", "ID BAP tidak valid.");
+  }
+
+  return id;
+}
+
 function getAdmin(req: Request) {
-  if (
-    !req.user ||
-    (req.user.role !== "admin_pusat" && req.user.role !== "admin_cabang")
-  ) {
+  if (!req.user || req.user.role !== "admin_pusat") {
     throw new AppError(
       403,
       "FORBIDDEN",
-      "Hanya admin yang dapat memvalidasi BAP.",
+      "Hanya Admin Pusat yang dapat memvalidasi BAP.",
     );
   }
 
   return {
     id_user: req.user.id_user,
-    role: req.user.role,
+    role: "admin_pusat" as const,
     id_unit: req.user.id_unit,
   };
 }
@@ -42,7 +49,7 @@ export const validasiController = {
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
       const admin = getAdmin(req);
-      const id = Number(req.params.id);
+      const id = getValidasiId(req);
       const data = await validasiService.getById(id, admin);
 
       return success(res, 200, {
@@ -57,7 +64,7 @@ export const validasiController = {
   async setujui(req: Request, res: Response, next: NextFunction) {
     try {
       const admin = getAdmin(req);
-      const id = Number(req.params.id);
+      const id = getValidasiId(req);
       const data = await validasiService.setujui(id, admin);
 
       return success(res, 200, {
@@ -73,7 +80,7 @@ export const validasiController = {
   async tolak(req: Request, res: Response, next: NextFunction) {
     try {
       const admin = getAdmin(req);
-      const id = Number(req.params.id);
+      const id = getValidasiId(req);
       const input = req.body as TolakBapInput;
       const data = await validasiService.tolak(id, input, admin);
 

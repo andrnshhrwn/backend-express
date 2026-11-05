@@ -2,12 +2,16 @@ import { z } from "zod";
 import { validate } from "../../middlewares/validate";
 
 const unitIdSchema = z.object({
-  id: z
-    .string()
-    .regex(/^[1-9]\d*$/, "ID unit harus berupa bilangan bulat positif"),
+  id: z.uuid("ID unit harus berupa UUID yang valid"),
 });
 
 const createUnitSchema = z.object({
+  kode_unit: z
+    .string()
+    .trim()
+    .min(1, "Kode unit wajib diisi")
+    .max(20, "Kode unit maksimal 20 karakter"),
+
   nama_unit: z
     .string()
     .trim()

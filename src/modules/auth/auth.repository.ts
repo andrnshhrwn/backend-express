@@ -11,11 +11,16 @@ export const authRepository = {
         password: true,
         role: true,
         id_unit: true,
+        unit: {
+          select: {
+            nama_unit: true,
+          },
+        },
       },
     });
   },
 
-  findById(id_user: number) {
+  findById(id_user: string) {
     return prisma.user.findUnique({
       where: { id_user },
       select: {
@@ -24,6 +29,11 @@ export const authRepository = {
         username: true,
         role: true,
         id_unit: true,
+        unit: {
+          select: {
+            nama_unit: true,
+          },
+        },
       },
     });
   },

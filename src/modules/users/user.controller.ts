@@ -2,14 +2,14 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../shared/errors/app-error";
 import { userService } from "./user.service";
 
-function getUserId(req: Request): number {
+function getUserId(req: Request): string {
   const id = req.params.id;
 
-  if (typeof id !== "string" || !/^[1-9]\d*$/.test(id)) {
+  if (typeof id !== "string") {
     throw new AppError(400, "INVALID_USER_ID", "ID pengguna tidak valid");
   }
 
-  return Number(id);
+  return id;
 }
 
 export const userController = {
@@ -42,6 +42,28 @@ export const userController = {
       res.status(200).json({
         success: true,
         message: "Detail pengguna berhasil diambil",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  async findTeknisi(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user || req.user.role !== "admin_cabang") {
+        throw new AppError(403, "FORBIDDEN", "Akses hanya untuk admin cabang");
+      }
+
+      const data = await userService.findTeknisiByUnit(req.user.id_unit);
+
+      res.status(200).json({
+        success: true,
+        message: "Daftar teknisi berhasil diambil",
         data,
       });
     } catch (error) {

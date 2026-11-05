@@ -9,12 +9,14 @@ const pengirimanSelect = {
   catatan: true,
   id_user_pusat: true,
   created_at: true,
+
   unit_tujuan: {
     select: {
       id_unit: true,
       nama_unit: true,
     },
   },
+
   user_pusat: {
     select: {
       id_user: true,
@@ -22,12 +24,14 @@ const pengirimanSelect = {
       username: true,
     },
   },
+
   details: {
     select: {
       id_detail: true,
       id_merk: true,
       ukuran_dn: true,
       jumlah: true,
+
       merk: {
         select: {
           id_merk: true,
@@ -39,6 +43,26 @@ const pengirimanSelect = {
   },
 } as const;
 
+type CreatePengirimanRepositoryInput = {
+  no_pengiriman: string;
+  id_unit_tujuan: string;
+  tgl_pengiriman: Date;
+  catatan?: string | null;
+  id_user_pusat: string;
+  details: {
+    id_merk: string;
+    ukuran_dn: string;
+    jumlah: number;
+  }[];
+};
+
+type UpdatePengirimanRepositoryInput = {
+  no_pengiriman?: string;
+  id_unit_tujuan?: string;
+  tgl_pengiriman?: Date;
+  catatan?: string | null;
+};
+
 export const pengirimanWmRepository = {
   findAll() {
     return prisma.pengirimanWm.findMany({
@@ -47,7 +71,7 @@ export const pengirimanWmRepository = {
     });
   },
 
-  findById(id_pengiriman: number) {
+  findById(id_pengiriman: string) {
     return prisma.pengirimanWm.findUnique({
       where: { id_pengiriman },
       select: pengirimanSelect,
@@ -61,18 +85,7 @@ export const pengirimanWmRepository = {
     });
   },
 
-  create(data: {
-    no_pengiriman: string;
-    id_unit_tujuan: number;
-    tgl_pengiriman: Date;
-    catatan?: string | null;
-    id_user_pusat: number;
-    details: {
-      id_merk: number;
-      ukuran_dn: string;
-      jumlah: number;
-    }[];
-  }) {
+  create(data: CreatePengirimanRepositoryInput) {
     const { details, ...pengirimanData } = data;
 
     return prisma.pengirimanWm.create({
@@ -87,15 +100,7 @@ export const pengirimanWmRepository = {
     });
   },
 
-  update(
-    id_pengiriman: number,
-    data: {
-      no_pengiriman?: string;
-      id_unit_tujuan?: number;
-      tgl_pengiriman?: Date;
-      catatan?: string | null;
-    },
-  ) {
+  update(id_pengiriman: string, data: UpdatePengirimanRepositoryInput) {
     return prisma.pengirimanWm.update({
       where: { id_pengiriman },
       data,
@@ -103,7 +108,7 @@ export const pengirimanWmRepository = {
     });
   },
 
-  delete(id_pengiriman: number) {
+  delete(id_pengiriman: string) {
     return prisma.pengirimanWm.delete({
       where: { id_pengiriman },
       select: { id_pengiriman: true },

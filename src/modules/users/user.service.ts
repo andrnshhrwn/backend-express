@@ -3,20 +3,22 @@ import { AppError } from "../../shared/errors/app-error";
 import { prisma } from "../../lib/prisma";
 import { userRepository } from "./user.repository";
 
+type UserRole = "admin_pusat" | "admin_cabang" | "teknisi";
+
 type CreateUserInput = {
   fullname: string;
   username: string;
   password: string;
-  role: "admin_pusat" | "admin_cabang" | "teknisi";
-  id_unit?: number | null;
+  role: UserRole;
+  id_unit?: string | null;
 };
 
 type UpdateUserInput = {
   fullname?: string;
   username?: string;
   password?: string;
-  role?: "admin_pusat" | "admin_cabang" | "teknisi";
-  id_unit?: number | null;
+  role?: UserRole;
+  id_unit?: string | null;
 };
 
 export const userService = {
@@ -24,7 +26,7 @@ export const userService = {
     return userRepository.findAll();
   },
 
-  async findById(id_user: number) {
+  async findById(id_user: string) {
     const user = await userRepository.findById(id_user);
 
     if (!user) {
@@ -32,6 +34,18 @@ export const userService = {
     }
 
     return user;
+  },
+
+  async findTeknisiByUnit(id_unit: string | null) {
+    if (id_unit === null) {
+      throw new AppError(
+        403,
+        "UNIT_ACCESS_DENIED",
+        "Pengguna tidak terikat pada unit",
+      );
+    }
+
+    return userRepository.findTeknisiByUnit(id_unit);
   },
 
   async create(data: CreateUserInput) {
@@ -82,7 +96,7 @@ export const userService = {
     });
   },
 
-  async update(id_user: number, data: UpdateUserInput) {
+  async update(id_user: string, data: UpdateUserInput) {
     const currentUser = await this.findById(id_user);
 
     if (data.username !== undefined) {

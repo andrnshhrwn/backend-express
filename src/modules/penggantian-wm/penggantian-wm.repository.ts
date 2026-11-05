@@ -5,8 +5,8 @@ import type {
 } from "./penggantian-wm.validator";
 
 type PenggantianWmAccessScope = {
-  id_unit?: number;
-  id_teknisi?: number;
+  id_unit?: string;
+  id_teknisi?: string;
 };
 
 const detailInclude = {
@@ -76,7 +76,7 @@ export const penggantianWmRepository = {
     };
   },
 
-  findById(id: number, scope: PenggantianWmAccessScope) {
+  findById(id: string, scope: PenggantianWmAccessScope) {
     return prisma.penggantianWm.findFirst({
       where: {
         id_penggantian: id,
@@ -91,7 +91,7 @@ export const penggantianWmRepository = {
     });
   },
 
-  findPenugasanById(id: number) {
+  findPenugasanById(id: string) {
     return prisma.penugasan.findUnique({
       where: { id_penugasan: id },
       include: {
@@ -101,7 +101,7 @@ export const penggantianWmRepository = {
     });
   },
 
-  async findExistingSubmission(idPenugasan: number) {
+  async findExistingSubmission(idPenugasan: string) {
     return prisma.penggantianWm.findMany({
       where: { id_penugasan: idPenugasan },
       select: {
@@ -111,11 +111,9 @@ export const penggantianWmRepository = {
     });
   },
 
-  async create(input: CreatePenggantianWmInput, idTeknisi: number) {
+  async create(input: CreatePenggantianWmInput, idTeknisi: string) {
     return prisma.$transaction(async (tx) => {
-      // Kunci baris SPK agar pembuatan BAP untuk SPK yang sama
-      // diserialisasi oleh database.
-      const locked = await tx.$queryRaw<Array<{ id_penugasan: number }>>`
+      const locked = await tx.$queryRaw<Array<{ id_penugasan: string }>>`
         SELECT id_penugasan
         FROM penugasan
         WHERE id_penugasan = ${input.id_penugasan}
@@ -177,7 +175,6 @@ export const penggantianWmRepository = {
         include: detailInclude,
       });
 
-      // SPK mulai dikerjakan jika sebelumnya masih pending.
       if (penugasan.status === "pending") {
         await tx.penugasan.update({
           where: { id_penugasan: input.id_penugasan },

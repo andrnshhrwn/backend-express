@@ -1,5 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
+import { AppError } from "../../shared/errors/app-error";
 import { unitService } from "./unit.service";
+
+function getUnitId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(400, "INVALID_UNIT_ID", "ID unit tidak valid");
+  }
+
+  return id;
+}
 
 export const unitController = {
   async findAll(
@@ -26,7 +37,7 @@ export const unitController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const data = await unitService.findById(Number(req.params.id));
+      const data = await unitService.findById(getUnitId(req));
 
       res.status(200).json({
         success: true,
@@ -40,7 +51,10 @@ export const unitController = {
 
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const data = await unitService.create(req.body.nama_unit);
+      const data = await unitService.create(
+        req.body.kode_unit,
+        req.body.nama_unit,
+      );
 
       res.status(201).json({
         success: true,
@@ -55,7 +69,8 @@ export const unitController = {
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data = await unitService.update(
-        Number(req.params.id),
+        getUnitId(req),
+        req.body.kode_unit,
         req.body.nama_unit,
       );
 
@@ -71,7 +86,7 @@ export const unitController = {
 
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const data = await unitService.delete(Number(req.params.id));
+      const data = await unitService.delete(getUnitId(req));
 
       res.status(200).json({
         success: true,

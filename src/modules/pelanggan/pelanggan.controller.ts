@@ -2,14 +2,14 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../shared/errors/app-error";
 import { pelangganService } from "./pelanggan.service";
 
-function getPelangganId(req: Request): number {
+function getPelangganId(req: Request): string {
   const id = req.params.id;
 
-  if (typeof id !== "string" || !/^[1-9]\d*$/.test(id)) {
+  if (typeof id !== "string") {
     throw new AppError(400, "INVALID_PELANGGAN_ID", "ID pelanggan tidak valid");
   }
 
-  return Number(id);
+  return id;
 }
 
 export const pelangganController = {

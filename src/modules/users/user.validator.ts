@@ -1,11 +1,10 @@
 import { z } from "zod";
 import { validate } from "../../middlewares/validate";
 
+const uuidSchema = z.uuid("ID harus berupa UUID yang valid");
+
 const userIdSchema = z.object({
-  id: z.coerce
-    .number()
-    .int("ID pengguna harus berupa bilangan bulat")
-    .positive("ID pengguna harus lebih besar dari 0"),
+  id: uuidSchema,
 });
 
 const createUserSchema = z
@@ -35,12 +34,7 @@ const createUserSchema = z
       message: "Role pengguna tidak valid",
     }),
 
-    id_unit: z.coerce
-      .number()
-      .int("ID unit harus berupa bilangan bulat")
-      .positive("ID unit harus lebih besar dari 0")
-      .nullable()
-      .optional(),
+    id_unit: uuidSchema.nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.role === "admin_pusat" && data.id_unit != null) {
@@ -85,12 +79,7 @@ const updateUserSchema = z
 
     role: z.enum(["admin_pusat", "admin_cabang", "teknisi"]).optional(),
 
-    id_unit: z
-      .union([
-        z.coerce.number().int().positive("ID unit harus lebih besar dari 0"),
-        z.null(),
-      ])
-      .optional(),
+    id_unit: uuidSchema.nullable().optional(),
   })
   .refine(
     (data) => Object.keys(data).length > 0,

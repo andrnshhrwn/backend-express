@@ -2,10 +2,7 @@ import { z } from "zod";
 import { validate } from "../../middlewares/validate";
 
 const pelangganIdSchema = z.object({
-  id: z.coerce
-    .number()
-    .int("ID pelanggan harus berupa bilangan bulat")
-    .positive("ID pelanggan harus lebih besar dari 0"),
+  id: z.uuid("ID pelanggan harus berupa UUID yang valid"),
 });
 
 const createPelangganSchema = z.object({
@@ -15,10 +12,7 @@ const createPelangganSchema = z.object({
     .min(1, "Nomor pelanggan PDAM wajib diisi")
     .max(50, "Nomor pelanggan PDAM maksimal 50 karakter"),
 
-  id_unit: z.coerce
-    .number()
-    .int("ID unit harus berupa bilangan bulat")
-    .positive("ID unit harus lebih besar dari 0"),
+  id_unit: z.uuid("ID unit harus berupa UUID yang valid"),
 
   nama: z
     .string()
@@ -32,11 +26,7 @@ const createPelangganSchema = z.object({
     .min(1, "Alamat pelanggan wajib diisi")
     .max(255, "Alamat pelanggan maksimal 255 karakter"),
 
-  id_tarif: z
-    .string()
-    .trim()
-    .min(1, "ID tarif wajib diisi")
-    .max(20, "ID tarif maksimal 20 karakter"),
+  id_tarif: z.uuid("ID tarif harus berupa UUID yang valid"),
 
   wm_no_seri_aktif: z
     .string()
@@ -55,11 +45,7 @@ const updatePelangganSchema = z
       .max(50, "Nomor pelanggan PDAM maksimal 50 karakter")
       .optional(),
 
-    id_unit: z.coerce
-      .number()
-      .int("ID unit harus berupa bilangan bulat")
-      .positive("ID unit harus lebih besar dari 0")
-      .optional(),
+    id_unit: z.uuid("ID unit harus berupa UUID yang valid").optional(),
 
     nama: z
       .string()
@@ -75,12 +61,7 @@ const updatePelangganSchema = z
       .max(255, "Alamat pelanggan maksimal 255 karakter")
       .optional(),
 
-    id_tarif: z
-      .string()
-      .trim()
-      .min(1, "ID tarif wajib diisi")
-      .max(20, "ID tarif maksimal 20 karakter")
-      .optional(),
+    id_tarif: z.uuid("ID tarif harus berupa UUID yang valid").optional(),
 
     wm_no_seri_aktif: z
       .string()

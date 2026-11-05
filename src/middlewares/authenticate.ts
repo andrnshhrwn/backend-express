@@ -1,12 +1,17 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { z } from "zod";
 import { env } from "../config/env";
 import { AppError } from "../shared/errors/app-error";
 
+const uuidSchema = z.uuid();
+
+const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi"]);
+
 export interface AuthUser {
-  id_user: number;
+  id_user: string;
   role: "admin_pusat" | "admin_cabang" | "teknisi";
-  id_unit: number | null;
+  id_unit: string | null;
 }
 
 declare global {
@@ -35,23 +40,30 @@ export function authenticate(
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET);
 
-    if (
-      typeof decoded === "string" ||
-      typeof decoded.id_user !== "number" ||
-      !["admin_pusat", "admin_cabang", "teknisi"].includes(
-        String(decoded.role),
-      ) ||
-      !(decoded.id_unit === null || typeof decoded.id_unit === "number")
-    ) {
+    if (typeof decoded === "string") {
+      return next(
+        new AppError(401, "INVALID_TOKEN", "Token autentikasi tidak valid"),
+      );
+    }
+
+    const validUserId = uuidSchema.safeParse(decoded.id_user);
+    const validRole = userRoleSchema.safeParse(decoded.role);
+
+    const validUnitId =
+      decoded.id_unit === null
+        ? true
+        : uuidSchema.safeParse(decoded.id_unit).success;
+
+    if (!validUserId.success || !validRole.success || !validUnitId) {
       return next(
         new AppError(401, "INVALID_TOKEN", "Token autentikasi tidak valid"),
       );
     }
 
     req.user = {
-      id_user: decoded.id_user,
-      role: decoded.role as AuthUser["role"],
-      id_unit: decoded.id_unit,
+      id_user: validUserId.data,
+      role: validRole.data,
+      id_unit: decoded.id_unit as string | null,
     };
 
     next();

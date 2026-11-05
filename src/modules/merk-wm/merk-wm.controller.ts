@@ -1,5 +1,16 @@
 import type { Request, Response, NextFunction } from "express";
+import { AppError } from "../../shared/errors/app-error";
 import { merkWmService } from "./merk-wm.service";
+
+function getMerkWmId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(400, "INVALID_MERK_WM_ID", "ID merek WM tidak valid");
+  }
+
+  return id;
+}
 
 export const merkWmController = {
   async findAll(
@@ -9,6 +20,7 @@ export const merkWmController = {
   ): Promise<void> {
     try {
       const data = await merkWmService.findAll();
+
       res.status(200).json({
         success: true,
         message: "Daftar merek WM berhasil diambil",
@@ -25,7 +37,8 @@ export const merkWmController = {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const data = await merkWmService.findById(Number(req.params.id));
+      const data = await merkWmService.findById(getMerkWmId(req));
+
       res.status(200).json({
         success: true,
         message: "Detail merek WM berhasil diambil",
@@ -39,6 +52,7 @@ export const merkWmController = {
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data = await merkWmService.create(req.body);
+
       res.status(201).json({
         success: true,
         message: "Merek WM berhasil dibuat",
@@ -51,7 +65,8 @@ export const merkWmController = {
 
   async update(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const data = await merkWmService.update(Number(req.params.id), req.body);
+      const data = await merkWmService.update(getMerkWmId(req), req.body);
+
       res.status(200).json({
         success: true,
         message: "Merek WM berhasil diperbarui",
@@ -64,7 +79,7 @@ export const merkWmController = {
 
   async delete(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const data = await merkWmService.delete(Number(req.params.id));
+      const data = await merkWmService.delete(getMerkWmId(req));
 
       res.status(200).json({
         success: true,

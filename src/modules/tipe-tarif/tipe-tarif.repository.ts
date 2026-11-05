@@ -3,7 +3,14 @@ import { prisma } from "../../lib/prisma";
 export const tipeTarifRepository = {
   findAll() {
     return prisma.tipeTarif.findMany({
-      orderBy: { id_tarif: "asc" },
+      orderBy: { kode_tarif: "asc" },
+      include: {
+        _count: {
+          select: {
+            pelanggan: true,
+          },
+        },
+      },
     });
   },
 
@@ -13,17 +20,23 @@ export const tipeTarifRepository = {
     });
   },
 
+  findByCode(kode_tarif: string) {
+    return prisma.tipeTarif.findUnique({
+      where: { kode_tarif },
+    });
+  },
+
   findByName(nama_tarif: string) {
     return prisma.tipeTarif.findFirst({
       where: { nama_tarif },
     });
   },
 
-  create(data: { id_tarif: string; nama_tarif: string }) {
+  create(data: { kode_tarif: string; nama_tarif: string }) {
     return prisma.tipeTarif.create({ data });
   },
 
-  update(id_tarif: string, data: { nama_tarif: string }) {
+  update(id_tarif: string, data: { kode_tarif: string; nama_tarif: string }) {
     return prisma.tipeTarif.update({
       where: { id_tarif },
       data,

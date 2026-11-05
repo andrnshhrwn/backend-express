@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "node:path";
 import { AppError } from "../../shared/errors/app-error";
 
-const uploadExcel = multer({
+const uploadImportFile = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 5 * 1024 * 1024,
@@ -11,12 +11,12 @@ const uploadExcel = multer({
   fileFilter: (_req, file, callback) => {
     const ext = path.extname(file.originalname).toLowerCase();
 
-    if (![".xlsx", ".xls"].includes(ext)) {
+    if (![".csv", ".xlsx", ".xls"].includes(ext)) {
       callback(
         new AppError(
           400,
           "INVALID_FILE_TYPE",
-          "File harus berformat .xlsx atau .xls.",
+          "File harus berformat .csv, .xlsx, atau .xls.",
         ),
       );
       return;
@@ -26,4 +26,4 @@ const uploadExcel = multer({
   },
 });
 
-export const uploadPelangganExcel = uploadExcel.single("file");
+export const uploadPelangganImport = uploadImportFile.single("file");

@@ -2,19 +2,15 @@ import { z } from "zod";
 import { validate } from "../../middlewares/validate";
 
 const idSchema = z.object({
-  id: z
-    .string()
-    .trim()
-    .min(1, "ID tarif wajib diisi")
-    .max(20, "ID tarif maksimal 20 karakter"),
+  id: z.uuid("ID tarif harus berupa UUID yang valid"),
 });
 
 const createSchema = z.object({
-  id_tarif: z
+  kode_tarif: z
     .string()
     .trim()
-    .min(1, "ID tarif wajib diisi")
-    .max(20, "ID tarif maksimal 20 karakter"),
+    .min(1, "Kode tarif wajib diisi")
+    .max(20, "Kode tarif maksimal 20 karakter"),
 
   nama_tarif: z
     .string()
@@ -23,13 +19,7 @@ const createSchema = z.object({
     .max(100, "Nama tarif maksimal 100 karakter"),
 });
 
-const updateSchema = z.object({
-  nama_tarif: z
-    .string()
-    .trim()
-    .min(1, "Nama tarif wajib diisi")
-    .max(100, "Nama tarif maksimal 100 karakter"),
-});
+const updateSchema = createSchema;
 
 export const validateTipeTarifId = validate(idSchema, "params");
 

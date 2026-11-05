@@ -12,7 +12,7 @@ import {
 const router = Router();
 
 router.use(authenticate);
-router.use(authorize("admin_pusat", "admin_cabang"));
+router.use(authorize("admin_pusat"));
 
 router.get(
   "/",

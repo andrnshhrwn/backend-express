@@ -29,10 +29,19 @@ export const importPelangganController = {
   confirm: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const input = req.body as ConfirmImportPelangganInput;
+
+      if (!input || !Array.isArray(input.rows)) {
+        throw new AppError(
+          400,
+          "INVALID_IMPORT_DATA",
+          "Format data import tidak valid.",
+        );
+      }
+
       const data = await importPelangganService.confirm(input);
 
-      return success(res, 201, {
-        message: "Import pelanggan berhasil.",
+      return success(res, 200, {
+        message: "Proses import pelanggan selesai.",
         data,
       });
     } catch (error) {

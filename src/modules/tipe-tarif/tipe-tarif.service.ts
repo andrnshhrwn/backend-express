@@ -1,9 +1,21 @@
 import { AppError } from "../../shared/errors/app-error";
 import { tipeTarifRepository } from "./tipe-tarif.repository";
 
+type TipeTarifInput = {
+  kode_tarif: string;
+  nama_tarif: string;
+};
+
 export const tipeTarifService = {
-  findAll() {
-    return tipeTarifRepository.findAll();
+  async findAll() {
+    const tarifList = await tipeTarifRepository.findAll();
+
+    return tarifList.map((tarif) => ({
+      id_tarif: tarif.id_tarif,
+      kode_tarif: tarif.kode_tarif,
+      nama_tarif: tarif.nama_tarif,
+      jumlahPelanggan: tarif._count.pelanggan,
+    }));
   },
 
   async findById(id_tarif: string) {
@@ -20,20 +32,26 @@ export const tipeTarifService = {
     return tarif;
   },
 
-  async create(data: { id_tarif: string; nama_tarif: string }) {
-    const existingId = await tipeTarifRepository.findById(data.id_tarif);
+  async create(data: TipeTarifInput) {
+    const existing = await tipeTarifRepository.findAll();
 
-    if (existingId) {
+    const duplicateCode = existing.some(
+      (item) => item.kode_tarif.toLowerCase() === data.kode_tarif.toLowerCase(),
+    );
+
+    if (duplicateCode) {
       throw new AppError(
         409,
-        "TIPE_TARIF_ID_ALREADY_EXISTS",
-        "ID tarif sudah digunakan",
+        "TIPE_TARIF_CODE_ALREADY_EXISTS",
+        "Kode tarif sudah digunakan",
       );
     }
 
-    const existingName = await tipeTarifRepository.findByName(data.nama_tarif);
+    const duplicateName = existing.some(
+      (item) => item.nama_tarif.toLowerCase() === data.nama_tarif.toLowerCase(),
+    );
 
-    if (existingName) {
+    if (duplicateName) {
       throw new AppError(
         409,
         "TIPE_TARIF_NAME_ALREADY_EXISTS",
@@ -44,12 +62,32 @@ export const tipeTarifService = {
     return tipeTarifRepository.create(data);
   },
 
-  async update(id_tarif: string, data: { nama_tarif: string }) {
+  async update(id_tarif: string, data: TipeTarifInput) {
     await this.findById(id_tarif);
 
-    const existingName = await tipeTarifRepository.findByName(data.nama_tarif);
+    const existing = await tipeTarifRepository.findAll();
 
-    if (existingName && existingName.id_tarif !== id_tarif) {
+    const duplicateCode = existing.some(
+      (item) =>
+        item.id_tarif !== id_tarif &&
+        item.kode_tarif.toLowerCase() === data.kode_tarif.toLowerCase(),
+    );
+
+    if (duplicateCode) {
+      throw new AppError(
+        409,
+        "TIPE_TARIF_CODE_ALREADY_EXISTS",
+        "Kode tarif sudah digunakan",
+      );
+    }
+
+    const duplicateName = existing.some(
+      (item) =>
+        item.id_tarif !== id_tarif &&
+        item.nama_tarif.toLowerCase() === data.nama_tarif.toLowerCase(),
+    );
+
+    if (duplicateName) {
       throw new AppError(
         409,
         "TIPE_TARIF_NAME_ALREADY_EXISTS",

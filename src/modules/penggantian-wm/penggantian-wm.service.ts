@@ -20,7 +20,10 @@ function buildAccessScope(user: AuthUser) {
       );
     }
 
-    return { id_unit: user.id_unit };
+    return {
+      id_unit: user.id_unit,
+      id_teknisi: user.id_user,
+    };
   }
 
   return { id_teknisi: user.id_user };
@@ -32,7 +35,7 @@ export const penggantianWmService = {
     return penggantianWmRepository.findAll(filters, scope);
   },
 
-  async getById(id: number, user: AuthUser) {
+  async getById(id: string, user: AuthUser) {
     const scope = buildAccessScope(user);
     const data = await penggantianWmRepository.findById(id, scope);
 
@@ -43,7 +46,7 @@ export const penggantianWmService = {
     return data;
   },
 
-  async create(input: CreatePenggantianWmInput, idTeknisi: number) {
+  async create(input: CreatePenggantianWmInput, idTeknisi: string) {
     const result = await penggantianWmRepository.create(input, idTeknisi);
 
     switch (result.kind) {

@@ -2,14 +2,28 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../shared/errors/app-error";
 import { pengirimanWmService } from "./pengiriman-wm.service";
 
-function getUserId(req: Request): number {
+function getUserId(req: Request): string {
   const id_user = req.user?.id_user;
 
-  if (!id_user || !Number.isInteger(id_user) || id_user <= 0) {
+  if (typeof id_user !== "string" || !id_user) {
     throw new AppError(401, "UNAUTHORIZED", "Pengguna belum terautentikasi");
   }
 
   return id_user;
+}
+
+function getPengirimanId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(
+      400,
+      "INVALID_PENGIRIMAN_ID",
+      "ID pengiriman tidak valid",
+    );
+  }
+
+  return id;
 }
 
 export const pengirimanWmController = {
@@ -29,7 +43,7 @@ export const pengirimanWmController = {
 
   async findById(req: Request, res: Response, next: NextFunction) {
     try {
-      const id_pengiriman = Number(req.params.id);
+      const id_pengiriman = getPengirimanId(req);
       const data = await pengirimanWmService.findById(id_pengiriman);
 
       res.status(200).json({
@@ -59,8 +73,11 @@ export const pengirimanWmController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
-      const id_pengiriman = Number(req.params.id);
-      const data = await pengirimanWmService.update(id_pengiriman, req.body);
+      const id_pengiriman = getPengirimanId(req);
+      const data = await pengirimanWmService.update(
+        id_pengiriman,
+        req.body,
+      );
 
       res.status(200).json({
         status: "success",
@@ -74,7 +91,8 @@ export const pengirimanWmController = {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      const id_pengiriman = Number(req.params.id);
+      const id_pengiriman = getPengirimanId(req);
+
       await pengirimanWmService.delete(id_pengiriman);
 
       res.status(200).json({

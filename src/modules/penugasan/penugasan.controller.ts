@@ -3,6 +3,20 @@ import { penugasanService } from "./penugasan.service";
 import { success } from "../../shared/http/response";
 import { AppError } from "../../shared/errors/app-error";
 
+function getPenugasanId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(
+      400,
+      "INVALID_PENUGASAN_ID",
+      "ID penugasan tidak valid.",
+    );
+  }
+
+  return id;
+}
+
 export const penugasanController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
@@ -27,7 +41,7 @@ export const penugasanController = {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const id = Number(req.params.id);
+      const id = getPenugasanId(req);
       const data = await penugasanService.getById(id, req.user);
 
       return success(res, 200, {
@@ -56,17 +70,58 @@ export const penugasanController = {
     }
   },
 
+  async assignTeknisi(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
+      }
+
+      const id = getPenugasanId(req);
+
+      const data = await penugasanService.assignTeknisi(
+        id,
+        req.body.id_teknisi,
+        req.user,
+      );
+
+      return success(res, 200, {
+        message: "Teknisi berhasil ditetapkan.",
+        data,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+
   async update(req: Request, res: Response, next: NextFunction) {
     try {
       if (!req.user) {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const id = Number(req.params.id);
+      const id = getPenugasanId(req);
       const data = await penugasanService.update(id, req.body, req.user);
 
       return success(res, 200, {
         message: "Penugasan berhasil diperbarui.",
+        data,
+      });
+    } catch (error) {
+      return next(error);
+    }
+  },
+
+  async cancel(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.user) {
+        throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
+      }
+
+      const id = getPenugasanId(req);
+      const data = await penugasanService.cancel(id, req.user);
+
+      return success(res, 200, {
+        message: "SPK berhasil dibatalkan.",
         data,
       });
     } catch (error) {
@@ -80,7 +135,8 @@ export const penugasanController = {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const id = Number(req.params.id);
+      const id = getPenugasanId(req);
+
       await penugasanService.delete(id, req.user);
 
       return success(res, 200, {

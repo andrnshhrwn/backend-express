@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma";
 
 type CreatePelangganInput = {
   id_pelanggan_pdam: string;
-  id_unit: number;
+  id_unit: string;
   nama: string;
   alamat: string;
   id_tarif: string;
@@ -18,7 +18,7 @@ export const pelangganService = {
     return pelangganRepository.findAll();
   },
 
-  async findById(id_pelanggan: number) {
+  async findById(id_pelanggan: string) {
     const pelanggan = await pelangganRepository.findById(id_pelanggan);
 
     if (!pelanggan) {
@@ -45,17 +45,18 @@ export const pelangganService = {
       );
     }
 
-    const unit = await prisma.unit.findUnique({
-      where: { id_unit: data.id_unit },
-    });
+    const [unit, tarif] = await Promise.all([
+      prisma.unit.findUnique({
+        where: { id_unit: data.id_unit },
+      }),
+      prisma.tipeTarif.findUnique({
+        where: { id_tarif: data.id_tarif },
+      }),
+    ]);
 
     if (!unit) {
       throw new AppError(404, "UNIT_NOT_FOUND", "Unit tidak ditemukan");
     }
-
-    const tarif = await prisma.tipeTarif.findUnique({
-      where: { id_tarif: data.id_tarif },
-    });
 
     if (!tarif) {
       throw new AppError(
@@ -68,7 +69,7 @@ export const pelangganService = {
     return pelangganRepository.create(data);
   },
 
-  async update(id_pelanggan: number, data: UpdatePelangganInput) {
+  async update(id_pelanggan: string, data: UpdatePelangganInput) {
     await this.findById(id_pelanggan);
 
     if (data.id_pelanggan_pdam !== undefined) {
@@ -115,7 +116,7 @@ export const pelangganService = {
     return pelangganRepository.update(id_pelanggan, data);
   },
 
-  async delete(id_pelanggan: number) {
+  async delete(id_pelanggan: string) {
     await this.findById(id_pelanggan);
 
     const hasRelations = await pelangganRepository.hasRelations(id_pelanggan);

@@ -12,7 +12,7 @@ const nullableString = z.string().trim().max(50).nullable().optional();
 
 export const createPenggantianWmSchema = z
   .object({
-    id_penugasan: z.coerce.number().int().positive(),
+    id_penugasan: z.uuid("ID penugasan harus berupa UUID yang valid."),
 
     no_seri_wm_lama: nullableString,
 
@@ -33,13 +33,16 @@ export const createPenggantianWmSchema = z
   .strict();
 
 export const penggantianWmIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  id: z.uuid("ID BAP harus berupa UUID yang valid."),
 });
 
 export const listPenggantianWmQuerySchema = z.object({
-  id_penugasan: z.coerce.number().int().positive().optional(),
+  id_penugasan: z.uuid("ID penugasan harus berupa UUID yang valid.").optional(),
+
   status_validasi: z.enum(["menunggu", "disetujui", "ditolak"]).optional(),
+
   page: z.coerce.number().int().positive().default(1),
+
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 

@@ -1,12 +1,18 @@
 import { AppError } from "../../shared/errors/app-error";
 import { merkWmRepository } from "./merk-wm.repository";
 
+type MerkWmInput = {
+  kode_wm: string;
+  merk_wm: string;
+  wm_digit: number;
+};
+
 export const merkWmService = {
   findAll() {
     return merkWmRepository.findAll();
   },
 
-  async findById(id_merk: number) {
+  async findById(id_merk: string) {
     const merk = await merkWmRepository.findById(id_merk);
 
     if (!merk) {
@@ -16,10 +22,26 @@ export const merkWmService = {
     return merk;
   },
 
-  async create(data: { merk_wm: string; wm_digit: number }) {
-    const existing = await merkWmRepository.findByName(data.merk_wm);
+  async create(data: MerkWmInput) {
+    const existing = await merkWmRepository.findAll();
 
-    if (existing) {
+    const duplicateCode = existing.some(
+      (item) => item.kode_wm.toLowerCase() === data.kode_wm.toLowerCase(),
+    );
+
+    if (duplicateCode) {
+      throw new AppError(
+        409,
+        "MERK_WM_CODE_ALREADY_EXISTS",
+        "Kode WM sudah digunakan",
+      );
+    }
+
+    const duplicateName = existing.some(
+      (item) => item.merk_wm.toLowerCase() === data.merk_wm.toLowerCase(),
+    );
+
+    if (duplicateName) {
       throw new AppError(
         409,
         "MERK_WM_ALREADY_EXISTS",
@@ -30,12 +52,32 @@ export const merkWmService = {
     return merkWmRepository.create(data);
   },
 
-  async update(id_merk: number, data: { merk_wm: string; wm_digit: number }) {
+  async update(id_merk: string, data: MerkWmInput) {
     await this.findById(id_merk);
 
-    const existing = await merkWmRepository.findByName(data.merk_wm);
+    const existing = await merkWmRepository.findAll();
 
-    if (existing && existing.id_merk !== id_merk) {
+    const duplicateCode = existing.some(
+      (item) =>
+        item.id_merk !== id_merk &&
+        item.kode_wm.toLowerCase() === data.kode_wm.toLowerCase(),
+    );
+
+    if (duplicateCode) {
+      throw new AppError(
+        409,
+        "MERK_WM_CODE_ALREADY_EXISTS",
+        "Kode WM sudah digunakan",
+      );
+    }
+
+    const duplicateName = existing.some(
+      (item) =>
+        item.id_merk !== id_merk &&
+        item.merk_wm.toLowerCase() === data.merk_wm.toLowerCase(),
+    );
+
+    if (duplicateName) {
       throw new AppError(
         409,
         "MERK_WM_ALREADY_EXISTS",
@@ -46,7 +88,7 @@ export const merkWmService = {
     return merkWmRepository.update(id_merk, data);
   },
 
-  async delete(id_merk: number) {
+  async delete(id_merk: string) {
     await this.findById(id_merk);
 
     const hasRelations = await merkWmRepository.hasRelations(id_merk);

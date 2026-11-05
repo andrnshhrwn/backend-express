@@ -34,17 +34,25 @@ export const authService = {
         username: user.username,
         role: user.role,
         id_unit: user.id_unit,
+        nama_unit: user.unit?.nama_unit ?? null,
       },
     };
   },
 
-  async me(id_user: number) {
+  async me(id_user: string) {
     const user = await authRepository.findById(id_user);
 
     if (!user) {
       throw new AppError(401, "USER_NOT_FOUND", "Pengguna tidak ditemukan");
     }
 
-    return user;
+    return {
+      id_user: user.id_user,
+      fullname: user.fullname,
+      username: user.username,
+      role: user.role,
+      id_unit: user.id_unit,
+      nama_unit: user.unit?.nama_unit ?? null,
+    };
   },
 };

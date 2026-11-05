@@ -28,22 +28,14 @@ const validasiInclude = {
 } satisfies Prisma.PenggantianWmInclude;
 
 type AdminScope = {
-  role: "admin_pusat" | "admin_cabang";
-  id_unit: number | null;
+  id_user: string;
+  role: "admin_pusat";
+  id_unit: string | null;
 };
 
-function scopeWhere(scope: AdminScope) {
-  if (scope.role === "admin_pusat") return {};
-
-  if (scope.id_unit === null) {
-    return { id_penggantian: -1 };
-  }
-
-  return {
-    penugasan: {
-      id_unit: scope.id_unit,
-    },
-  };
+function scopeWhere(_scope: AdminScope): Prisma.PenggantianWmWhereInput {
+  // Admin Pusat memiliki akses monitoring seluruh unit.
+  return {};
 }
 
 export const validasiRepository = {
@@ -77,7 +69,7 @@ export const validasiRepository = {
     };
   },
 
-  findById(id: number, scope: AdminScope) {
+  findById(id: string, scope: AdminScope) {
     return prisma.penggantianWm.findFirst({
       where: {
         id_penggantian: id,
@@ -87,16 +79,50 @@ export const validasiRepository = {
     });
   },
 
-  async setujui(id: number, scope: AdminScope) {
+  async setujui(id: string) {
     return prisma.$transaction(async (tx) => {
-      const locked = await tx.$queryRaw<Array<{ id_penggantian: number }>>`
+      /*
+       * Ambil relasi SPK terlebih dahulu.
+       * Belum melakukan perubahan data pada tahap ini.
+       */
+      const initialBap = await tx.penggantianWm.findUnique({
+        where: { id_penggantian: id },
+        select: { id_penugasan: true },
+      });
+
+      if (!initialBap) {
+        return { kind: "NOT_FOUND" as const };
+      }
+
+      /*
+       * Kunci baris SPK terlebih dahulu.
+       * BAP lain yang terkait SPK yang sama harus menunggu
+       * transaksi ini selesai.
+       */
+      const lockedPenugasan = await tx.$queryRaw<
+        Array<{ id_penugasan: string }>
+      >`
+        SELECT id_penugasan
+        FROM penugasan
+        WHERE id_penugasan = ${initialBap.id_penugasan}
+        FOR UPDATE
+      `;
+
+      if (lockedPenugasan.length === 0) {
+        return { kind: "NOT_FOUND" as const };
+      }
+
+      /*
+       * Setelah SPK terkunci, kunci baris BAP.
+       */
+      const lockedBap = await tx.$queryRaw<Array<{ id_penggantian: string }>>`
         SELECT id_penggantian
         FROM penggantian_wm
         WHERE id_penggantian = ${id}
         FOR UPDATE
       `;
 
-      if (locked.length === 0) {
+      if (lockedBap.length === 0) {
         return { kind: "NOT_FOUND" as const };
       }
 
@@ -112,12 +138,7 @@ export const validasiRepository = {
         },
       });
 
-      if (!bap) return { kind: "NOT_FOUND" as const };
-
-      if (
-        scope.role === "admin_cabang" &&
-        (scope.id_unit === null || bap.penugasan.id_unit !== scope.id_unit)
-      ) {
+      if (!bap) {
         return { kind: "NOT_FOUND" as const };
       }
 
@@ -132,14 +153,19 @@ export const validasiRepository = {
         return { kind: "PENUGASAN_INACTIVE" as const };
       }
 
-      // Pastikan tidak ada BAP lain yang sudah disetujui.
+      /*
+       * Pastikan SPK belum memiliki BAP lain yang disetujui.
+       * Pemeriksaan dilakukan setelah baris SPK dikunci.
+       */
       const approved = await tx.penggantianWm.findFirst({
         where: {
           id_penugasan: bap.id_penugasan,
           status_validasi: "disetujui",
           id_penggantian: { not: id },
         },
-        select: { id_penggantian: true },
+        select: {
+          id_penggantian: true,
+        },
       });
 
       if (approved) {
@@ -164,8 +190,12 @@ export const validasiRepository = {
       });
 
       await tx.penugasan.update({
-        where: { id_penugasan: bap.id_penugasan },
-        data: { status: "selesai" },
+        where: {
+          id_penugasan: bap.id_penugasan,
+        },
+        data: {
+          status: "selesai",
+        },
       });
 
       const data = await tx.penggantianWm.findUnique({
@@ -173,34 +203,60 @@ export const validasiRepository = {
         include: validasiInclude,
       });
 
-      return { kind: "APPROVED" as const, data };
+      return {
+        kind: "APPROVED" as const,
+        data,
+      };
     });
   },
 
-  async tolak(id: number, input: TolakBapInput, scope: AdminScope) {
+  async tolak(id: string, input: TolakBapInput) {
     return prisma.$transaction(async (tx) => {
-      const locked = await tx.$queryRaw<Array<{ id_penggantian: number }>>`
+      const initialBap = await tx.penggantianWm.findUnique({
+        where: { id_penggantian: id },
+        select: { id_penugasan: true },
+      });
+
+      if (!initialBap) {
+        return { kind: "NOT_FOUND" as const };
+      }
+
+      /*
+       * Kunci SPK terlebih dahulu agar proses penolakan
+       * terserialisasi dengan proses persetujuan pada SPK sama.
+       */
+      const lockedPenugasan = await tx.$queryRaw<
+        Array<{ id_penugasan: string }>
+      >`
+        SELECT id_penugasan
+        FROM penugasan
+        WHERE id_penugasan = ${initialBap.id_penugasan}
+        FOR UPDATE
+      `;
+
+      if (lockedPenugasan.length === 0) {
+        return { kind: "NOT_FOUND" as const };
+      }
+
+      const lockedBap = await tx.$queryRaw<Array<{ id_penggantian: string }>>`
         SELECT id_penggantian
         FROM penggantian_wm
         WHERE id_penggantian = ${id}
         FOR UPDATE
       `;
 
-      if (locked.length === 0) {
+      if (lockedBap.length === 0) {
         return { kind: "NOT_FOUND" as const };
       }
 
       const bap = await tx.penggantianWm.findUnique({
         where: { id_penggantian: id },
-        include: { penugasan: true },
+        include: {
+          penugasan: true,
+        },
       });
 
-      if (!bap) return { kind: "NOT_FOUND" as const };
-
-      if (
-        scope.role === "admin_cabang" &&
-        (scope.id_unit === null || bap.penugasan.id_unit !== scope.id_unit)
-      ) {
+      if (!bap) {
         return { kind: "NOT_FOUND" as const };
       }
 
@@ -224,7 +280,10 @@ export const validasiRepository = {
         include: validasiInclude,
       });
 
-      return { kind: "REJECTED" as const, data };
+      return {
+        kind: "REJECTED" as const,
+        data,
+      };
     });
   },
 };

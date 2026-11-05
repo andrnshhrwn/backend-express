@@ -12,6 +12,8 @@ const router = Router();
 
 router.use(authenticate);
 
+router.get("/teknisi", authorize("admin_cabang"), userController.findTeknisi);
+
 router.use(authorize("admin_pusat"));
 
 router.get("/", userController.findAll);

@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -43,7 +44,8 @@ enum StatusValidasi {
 }
 
 model Unit {
-  id_unit   Int    @id @default(autoincrement())
+  id_unit   String @id @default(uuid()) @db.Char(36)
+  kode_unit String @unique @db.VarChar(20)
   nama_unit String @db.VarChar(100)
 
   users      User[]         @relation("UserUnit")
@@ -55,7 +57,8 @@ model Unit {
 }
 
 model TipeTarif {
-  id_tarif   String @id @db.VarChar(20)
+  id_tarif   String @id @default(uuid()) @db.Char(36)
+  kode_tarif String @unique @db.VarChar(20)
   nama_tarif String @db.VarChar(100)
 
   pelanggan Pelanggan[]
@@ -64,7 +67,8 @@ model TipeTarif {
 }
 
 model MerkWm {
-  id_merk  Int    @id @default(autoincrement())
+  id_merk  String @id @default(uuid()) @db.Char(36)
+  kode_wm  String @unique @db.VarChar(20)
   merk_wm  String @db.VarChar(50)
   wm_digit Int
 
@@ -74,8 +78,8 @@ model MerkWm {
 }
 
 model User {
-  id_user  Int      @id @default(autoincrement())
-  id_unit  Int?
+  id_user  String   @id @default(uuid()) @db.Char(36)
+  id_unit  String?  @db.Char(36)
   fullname String   @db.VarChar(100)
   username String   @unique @db.VarChar(50)
   password String   @db.VarChar(255)
@@ -92,13 +96,13 @@ model User {
 }
 
 model PengirimanWm {
-  id_pengiriman  Int       @id @default(autoincrement())
+  id_pengiriman  String    @id @default(uuid()) @db.Char(36)
   no_pengiriman  String    @unique @db.VarChar(50)
-  id_unit_tujuan Int
+  id_unit_tujuan String    @db.Char(36)
   tgl_pengiriman DateTime  @db.Date
   total_wm       Int       @default(0)
   catatan        String?   @db.Text
-  id_user_pusat  Int
+  id_user_pusat  String    @db.Char(36)
   created_at     DateTime? @default(now()) @db.DateTime(0)
 
   unit_tujuan Unit @relation("UnitTujuan", fields: [id_unit_tujuan], references: [id_unit])
@@ -110,9 +114,9 @@ model PengirimanWm {
 }
 
 model PengirimanWmDetail {
-  id_detail     Int    @id @default(autoincrement())
-  id_pengiriman Int
-  id_merk       Int
+  id_detail     String @id @default(uuid()) @db.Char(36)
+  id_pengiriman String @db.Char(36)
+  id_merk       String @db.Char(36)
   ukuran_dn     String @default("1/2") @db.VarChar(20)
   jumlah        Int
 
@@ -123,13 +127,13 @@ model PengirimanWmDetail {
 }
 
 model Pelanggan {
-  id_pelanggan      Int    @id @default(autoincrement())
+  id_pelanggan      String @id @default(uuid()) @db.Char(36)
   id_pelanggan_pdam String @unique @db.VarChar(50)
 
-  id_unit          Int
+  id_unit          String  @db.Char(36)
   nama             String  @db.VarChar(100)
   alamat           String  @db.VarChar(255)
-  id_tarif         String  @db.VarChar(20)
+  id_tarif         String  @db.Char(36)
   wm_no_seri_aktif String? @db.VarChar(50)
 
   unit  Unit      @relation(fields: [id_unit], references: [id_unit])
@@ -141,20 +145,21 @@ model Pelanggan {
 }
 
 model Penugasan {
-  id_penugasan      Int             @id @default(autoincrement())
-  id_pelanggan      Int
-  id_unit           Int
+  id_penugasan      String          @id @default(uuid()) @db.Char(36)
+  nomor_spk         String          @unique @db.VarChar(50)
+  id_pelanggan      String          @db.Char(36)
+  id_unit           String          @db.Char(36)
   tgl_penugasan     DateTime        @default(now()) @db.DateTime(0)
   alasan            String          @db.VarChar(255)
-  id_user_penugasan Int
+  id_user_penugasan String          @db.Char(36)
   status            PenugasanStatus @default(pending)
-  id_teknisi        Int
+  id_teknisi        String?         @db.Char(36)
 
   pelanggan Pelanggan @relation(fields: [id_pelanggan], references: [id_pelanggan])
   unit      Unit      @relation(fields: [id_unit], references: [id_unit])
 
-  pembuat User @relation("PenugasanCreator", fields: [id_user_penugasan], references: [id_user])
-  teknisi User @relation("PenugasanTeknisi", fields: [id_teknisi], references: [id_user])
+  pembuat User  @relation("PenugasanCreator", fields: [id_user_penugasan], references: [id_user])
+  teknisi User? @relation("PenugasanTeknisi", fields: [id_teknisi], references: [id_user])
 
   penggantian PenggantianWm[]
 
@@ -162,16 +167,16 @@ model Penugasan {
 }
 
 model PenggantianWm {
-  id_penggantian        Int            @id @default(autoincrement())
-  id_penugasan          Int
-  no_seri_wm_lama       String?        @db.VarChar(50)
+  id_penggantian        String         @id @default(uuid()) @db.Char(36)
+  id_penugasan          String         @db.Char(36)
+  no_seri_wm_lama       String?        @unique @db.VarChar(50)
   stand_wm_lama         Int?
   kondisi_fisik_wm_lama KondisiWmLama
   path_image_wm_lama    String?        @db.VarChar(255)
-  no_seri_wm_baru       String         @db.VarChar(50)
+  no_seri_wm_baru       String         @unique @db.VarChar(50)
   stand_awal_wm_baru    Int            @default(0)
   path_image_wm_baru    String         @db.VarChar(255)
-  id_teknisi            Int
+  id_teknisi            String         @db.Char(36)
   tgl_penggantian       DateTime       @db.DateTime(0)
   status_validasi       StatusValidasi @default(menunggu)
   catatan_validasi      String?        @db.Text
@@ -180,4 +185,11 @@ model PenggantianWm {
   teknisi   User      @relation("PenggantianTeknisi", fields: [id_teknisi], references: [id_user])
 
   @@map("penggantian_wm")
+}
+
+model SpkSequence {
+  tanggal     String @id @db.Char(8)
+  last_number Int   @default(0)
+
+  @@map("spk_sequences")
 }

@@ -1,10 +1,21 @@
 import { prisma } from "../../lib/prisma";
 
+type CreatePelangganData = {
+  id_pelanggan_pdam: string;
+  id_unit: string;
+  nama: string;
+  alamat: string;
+  id_tarif: string;
+  wm_no_seri_aktif?: string | null;
+};
+
+type UpdatePelangganData = Partial<CreatePelangganData>;
+
 export const pelangganRepository = {
   findAll() {
     return prisma.pelanggan.findMany({
       orderBy: {
-        id_pelanggan: "asc",
+        nama: "asc",
       },
       include: {
         unit: true,
@@ -13,11 +24,9 @@ export const pelangganRepository = {
     });
   },
 
-  findById(id_pelanggan: number) {
+  findById(id_pelanggan: string) {
     return prisma.pelanggan.findUnique({
-      where: {
-        id_pelanggan,
-      },
+      where: { id_pelanggan },
       include: {
         unit: true,
         tarif: true,
@@ -27,20 +36,11 @@ export const pelangganRepository = {
 
   findByPdamId(id_pelanggan_pdam: string) {
     return prisma.pelanggan.findUnique({
-      where: {
-        id_pelanggan_pdam,
-      },
+      where: { id_pelanggan_pdam },
     });
   },
 
-  create(data: {
-    id_pelanggan_pdam: string;
-    id_unit: number;
-    nama: string;
-    alamat: string;
-    id_tarif: string;
-    wm_no_seri_aktif?: string | null;
-  }) {
+  create(data: CreatePelangganData) {
     return prisma.pelanggan.create({
       data,
       include: {
@@ -50,21 +50,9 @@ export const pelangganRepository = {
     });
   },
 
-  update(
-    id_pelanggan: number,
-    data: {
-      id_pelanggan_pdam?: string;
-      id_unit?: number;
-      nama?: string;
-      alamat?: string;
-      id_tarif?: string;
-      wm_no_seri_aktif?: string | null;
-    },
-  ) {
+  update(id_pelanggan: string, data: UpdatePelangganData) {
     return prisma.pelanggan.update({
-      where: {
-        id_pelanggan,
-      },
+      where: { id_pelanggan },
       data,
       include: {
         unit: true,
@@ -73,21 +61,17 @@ export const pelangganRepository = {
     });
   },
 
-  async hasRelations(id_pelanggan: number): Promise<boolean> {
+  async hasRelations(id_pelanggan: string): Promise<boolean> {
     const count = await prisma.penugasan.count({
-      where: {
-        id_pelanggan,
-      },
+      where: { id_pelanggan },
     });
 
     return count > 0;
   },
 
-  delete(id_pelanggan: number) {
+  delete(id_pelanggan: string) {
     return prisma.pelanggan.delete({
-      where: {
-        id_pelanggan,
-      },
+      where: { id_pelanggan },
     });
   },
 };

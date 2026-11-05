@@ -3,14 +3,14 @@ import { prisma } from "../../lib/prisma";
 import { pengirimanWmRepository } from "./pengiriman-wm.repository";
 
 type DetailPengirimanInput = {
-  id_merk: number;
+  id_merk: string;
   ukuran_dn: string;
   jumlah: number;
 };
 
 type CreatePengirimanInput = {
   no_pengiriman: string;
-  id_unit_tujuan: number;
+  id_unit_tujuan: string;
   tgl_pengiriman: string | Date;
   catatan?: string | null;
   details: DetailPengirimanInput[];
@@ -18,7 +18,7 @@ type CreatePengirimanInput = {
 
 type UpdatePengirimanInput = {
   no_pengiriman?: string;
-  id_unit_tujuan?: number;
+  id_unit_tujuan?: string;
   tgl_pengiriman?: string | Date;
   catatan?: string | null;
 };
@@ -28,7 +28,7 @@ export const pengirimanWmService = {
     return pengirimanWmRepository.findAll();
   },
 
-  async findById(id_pengiriman: number) {
+  async findById(id_pengiriman: string) {
     const pengiriman = await pengirimanWmRepository.findById(id_pengiriman);
 
     if (!pengiriman) {
@@ -42,7 +42,7 @@ export const pengirimanWmService = {
     return pengiriman;
   },
 
-  async create(data: CreatePengirimanInput, id_user_pusat: number) {
+  async create(data: CreatePengirimanInput, id_user_pusat: string) {
     const existing = await pengirimanWmRepository.findByNoPengiriman(
       data.no_pengiriman,
     );
@@ -75,8 +75,14 @@ export const pengirimanWmService = {
     const merkIds = [...new Set(data.details.map((item) => item.id_merk))];
 
     const merks = await prisma.merkWm.findMany({
-      where: { id_merk: { in: merkIds } },
-      select: { id_merk: true },
+      where: {
+        id_merk: {
+          in: merkIds,
+        },
+      },
+      select: {
+        id_merk: true,
+      },
     });
 
     if (merks.length !== merkIds.length) {
@@ -97,7 +103,7 @@ export const pengirimanWmService = {
     });
   },
 
-  async update(id_pengiriman: number, data: UpdatePengirimanInput) {
+  async update(id_pengiriman: string, data: UpdatePengirimanInput) {
     await this.findById(id_pengiriman);
 
     if (data.no_pengiriman !== undefined) {
@@ -116,8 +122,12 @@ export const pengirimanWmService = {
 
     if (data.id_unit_tujuan !== undefined) {
       const unit = await prisma.unit.findUnique({
-        where: { id_unit: data.id_unit_tujuan },
-        select: { id_unit: true },
+        where: {
+          id_unit: data.id_unit_tujuan,
+        },
+        select: {
+          id_unit: true,
+        },
       });
 
       if (!unit) {
@@ -131,7 +141,7 @@ export const pengirimanWmService = {
 
     const updateData: {
       no_pengiriman?: string;
-      id_unit_tujuan?: number;
+      id_unit_tujuan?: string;
       tgl_pengiriman?: Date;
       catatan?: string | null;
     } = {};
@@ -155,8 +165,9 @@ export const pengirimanWmService = {
     return pengirimanWmRepository.update(id_pengiriman, updateData);
   },
 
-  async delete(id_pengiriman: number) {
+  async delete(id_pengiriman: string) {
     await this.findById(id_pengiriman);
+
     return pengirimanWmRepository.delete(id_pengiriman);
   },
 };

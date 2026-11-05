@@ -2,8 +2,8 @@ import type { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 type PenugasanAccessScope = {
-  id_unit?: number;
-  id_teknisi?: number;
+  id_unit?: string;
+  id_teknisi?: string;
 };
 
 export const penugasanRepository = {
@@ -37,7 +37,7 @@ export const penugasanRepository = {
     });
   },
 
-  findById(id: number, scope: PenugasanAccessScope = {}) {
+  findById(id: string, scope: PenugasanAccessScope = {}) {
     return prisma.penugasan.findFirst({
       where: {
         id_penugasan: id,
@@ -67,35 +67,36 @@ export const penugasanRepository = {
     });
   },
 
-  findPelangganById(id: number) {
+  findPelangganById(id: string) {
     return prisma.pelanggan.findUnique({
       where: { id_pelanggan: id },
     });
   },
 
-  findUnitById(id: number) {
+  findUnitById(id: string) {
     return prisma.unit.findUnique({
       where: { id_unit: id },
     });
   },
 
-  findTeknisiById(id: number) {
+  findTeknisiById(id: string, idUnit: string) {
     return prisma.user.findFirst({
       where: {
         id_user: id,
+        id_unit: idUnit,
         role: "teknisi",
       },
     });
   },
 
-  findPenggantianByPenugasanId(id: number) {
+  findPenggantianByPenugasanId(id: string) {
     return prisma.penggantianWm.findFirst({
       where: { id_penugasan: id },
       select: { id_penggantian: true },
     });
   },
 
-  findActiveByPelangganId(idPelanggan: number) {
+  findActiveByPelangganId(idPelanggan: string) {
     return prisma.penugasan.findFirst({
       where: {
         id_pelanggan: idPelanggan,
@@ -111,18 +112,27 @@ export const penugasanRepository = {
   },
 
   create(data: {
-    id_pelanggan: number;
-    id_unit: number;
+    nomor_spk: string;
+    id_pelanggan: string;
+    id_unit: string;
     tgl_penugasan?: Date;
     alasan: string;
-    id_user_penugasan: number;
-    id_teknisi: number;
+    id_user_penugasan: string;
   }) {
     return prisma.penugasan.create({
-      data,
+      data: {
+        ...data,
+        status: "pending",
+      },
       include: {
         pelanggan: true,
         unit: true,
+        pembuat: {
+          select: {
+            id_user: true,
+            fullname: true,
+          },
+        },
         teknisi: {
           select: {
             id_user: true,
@@ -133,7 +143,7 @@ export const penugasanRepository = {
     });
   },
 
-  update(id: number, data: Prisma.PenugasanUncheckedUpdateInput) {
+  update(id: string, data: Prisma.PenugasanUncheckedUpdateInput) {
     return prisma.penugasan.update({
       where: { id_penugasan: id },
       data,
@@ -150,9 +160,49 @@ export const penugasanRepository = {
     });
   },
 
-  delete(id: number) {
+  delete(id: string) {
     return prisma.penugasan.delete({
       where: { id_penugasan: id },
     });
+  },
+
+  async assignTeknisi(id: string, idTeknisi: string) {
+    return prisma.penugasan.update({
+      where: { id_penugasan: id },
+      data: { id_teknisi: idTeknisi },
+      include: {
+        pelanggan: true,
+        unit: true,
+        teknisi: {
+          select: {
+            id_user: true,
+            fullname: true,
+            username: true,
+          },
+        },
+      },
+    });
+  },
+
+  async getNextSpkSequence(tanggal: string): Promise<number> {
+    const sequence = await prisma.spkSequence.upsert({
+      where: {
+        tanggal,
+      },
+      create: {
+        tanggal,
+        last_number: 1,
+      },
+      update: {
+        last_number: {
+          increment: 1,
+        },
+      },
+      select: {
+        last_number: true,
+      },
+    });
+
+    return sequence.last_number;
   },
 };

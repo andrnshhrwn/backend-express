@@ -1,12 +1,14 @@
 import { z } from "zod";
 
 export const validasiIdSchema = z.object({
-  id: z.coerce.number().int().positive(),
+  id: z.uuid("ID BAP harus berupa UUID yang valid."),
 });
 
 export const validasiQuerySchema = z.object({
   status_validasi: z.enum(["menunggu", "disetujui", "ditolak"]).optional(),
+
   page: z.coerce.number().int().positive().default(1),
+
   limit: z.coerce.number().int().positive().max(100).default(20),
 });
 

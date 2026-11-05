@@ -7,26 +7,32 @@ export const unitRepository = {
     });
   },
 
-  findById(id_unit: number) {
+  findById(id_unit: string) {
     return prisma.unit.findUnique({
       where: { id_unit },
     });
   },
 
-  create(nama_unit: string) {
+  create(kode_unit: string, nama_unit: string) {
     return prisma.unit.create({
-      data: { nama_unit },
+      data: {
+        kode_unit,
+        nama_unit,
+      },
     });
   },
 
-  update(id_unit: number, nama_unit: string) {
+  update(id_unit: string, kode_unit: string, nama_unit: string) {
     return prisma.unit.update({
       where: { id_unit },
-      data: { nama_unit },
+      data: {
+        kode_unit,
+        nama_unit,
+      },
     });
   },
 
-  async hasRelations(id_unit: number): Promise<boolean> {
+  async hasRelations(id_unit: string): Promise<boolean> {
     const [users, pengiriman, pelanggan, penugasan] = await Promise.all([
       prisma.user.count({
         where: { id_unit },
@@ -45,7 +51,7 @@ export const unitRepository = {
     return users > 0 || pengiriman > 0 || pelanggan > 0 || penugasan > 0;
   },
 
-  delete(id_unit: number) {
+  delete(id_unit: string) {
     return prisma.unit.delete({
       where: { id_unit },
     });

@@ -14,6 +14,24 @@ const userSelect = {
   },
 } as const;
 
+type UserRole = "admin_pusat" | "admin_cabang" | "teknisi";
+
+type CreateUserData = {
+  fullname: string;
+  username: string;
+  password: string;
+  role: UserRole;
+  id_unit?: string | null;
+};
+
+type UpdateUserData = {
+  fullname?: string;
+  username?: string;
+  password?: string;
+  role?: UserRole;
+  id_unit?: string | null;
+};
+
 export const userRepository = {
   findAll() {
     return prisma.user.findMany({
@@ -22,7 +40,7 @@ export const userRepository = {
     });
   },
 
-  findById(id_user: number) {
+  findById(id_user: string) {
     return prisma.user.findUnique({
       where: { id_user },
       select: userSelect,
@@ -35,29 +53,27 @@ export const userRepository = {
     });
   },
 
-  create(data: {
-    fullname: string;
-    username: string;
-    password: string;
-    role: "admin_pusat" | "admin_cabang" | "teknisi";
-    id_unit?: number | null;
-  }) {
+  findTeknisiByUnit(id_unit: string) {
+    return prisma.user.findMany({
+      where: {
+        role: "teknisi",
+        id_unit,
+      },
+      select: userSelect,
+      orderBy: {
+        fullname: "asc",
+      },
+    });
+  },
+
+  create(data: CreateUserData) {
     return prisma.user.create({
       data,
       select: userSelect,
     });
   },
 
-  update(
-    id_user: number,
-    data: {
-      fullname?: string;
-      username?: string;
-      password?: string;
-      role?: "admin_pusat" | "admin_cabang" | "teknisi";
-      id_unit?: number | null;
-    },
-  ) {
+  update(id_user: string, data: UpdateUserData) {
     return prisma.user.update({
       where: { id_user },
       data,

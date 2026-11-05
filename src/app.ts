@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middlewares/error-handler.js";
 import { success } from "./shared/http/response.js";
@@ -17,7 +18,17 @@ import penugasanRoutes from "./modules/penugasan/penugasan.routes";
 import penggantianWmRoutes from "./modules/penggantian-wm/penggantian-wm.routes";
 import validasiRoutes from "./modules/validasi/validasi.routes";
 
+import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+
 export const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json({ limit: "1mb" }));
 
@@ -41,6 +52,8 @@ app.use(env.API_PREFIX + "/pengiriman-wm", pengirimanWmRoutes);
 app.use(env.API_PREFIX + "/penugasan", penugasanRoutes);
 app.use(env.API_PREFIX + "/penggantian-wm", penggantianWmRoutes);
 app.use(env.API_PREFIX + "/validasi", validasiRoutes);
+
+app.use(env.API_PREFIX + "/dashboard", dashboardRoutes);
 
 app.use(env.API_PREFIX, (_req, res) => {
   return res.status(404).json({

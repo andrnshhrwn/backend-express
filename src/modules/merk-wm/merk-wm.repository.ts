@@ -7,9 +7,15 @@ export const merkWmRepository = {
     });
   },
 
-  findById(id_merk: number) {
+  findById(id_merk: string) {
     return prisma.merkWm.findUnique({
       where: { id_merk },
+    });
+  },
+
+  findByCode(kode_wm: string) {
+    return prisma.merkWm.findUnique({
+      where: { kode_wm },
     });
   },
 
@@ -19,18 +25,25 @@ export const merkWmRepository = {
     });
   },
 
-  create(data: { merk_wm: string; wm_digit: number }) {
+  create(data: { kode_wm: string; merk_wm: string; wm_digit: number }) {
     return prisma.merkWm.create({ data });
   },
 
-  update(id_merk: number, data: { merk_wm: string; wm_digit: number }) {
+  update(
+    id_merk: string,
+    data: {
+      kode_wm: string;
+      merk_wm: string;
+      wm_digit: number;
+    },
+  ) {
     return prisma.merkWm.update({
       where: { id_merk },
       data,
     });
   },
 
-  hasRelations(id_merk: number) {
+  hasRelations(id_merk: string) {
     return prisma.pengirimanWmDetail
       .count({
         where: { id_merk },
@@ -38,7 +51,7 @@ export const merkWmRepository = {
       .then((count) => count > 0);
   },
 
-  delete(id_merk: number) {
+  delete(id_merk: string) {
     return prisma.merkWm.delete({
       where: { id_merk },
     });

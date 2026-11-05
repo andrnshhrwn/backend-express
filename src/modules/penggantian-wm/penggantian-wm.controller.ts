@@ -7,6 +7,16 @@ import type {
   ListPenggantianWmQuery,
 } from "./penggantian-wm.validator";
 
+function getPenggantianWmId(req: Request): string {
+  const id = req.params.id;
+
+  if (typeof id !== "string") {
+    throw new AppError(400, "INVALID_PENGGANTIAN_WM_ID", "ID BAP tidak valid.");
+  }
+
+  return id;
+}
+
 export const penggantianWmController = {
   async getAll(req: Request, res: Response, next: NextFunction) {
     try {
@@ -33,7 +43,7 @@ export const penggantianWmController = {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const id = Number(req.params.id);
+      const id = getPenggantianWmId(req);
       const data = await penggantianWmService.getById(id, req.user);
 
       return success(res, 200, {
