@@ -17,10 +17,11 @@ export const tolakBapSchema = z
     catatan_validasi: z
       .string()
       .trim()
-      .min(1, "Catatan penolakan wajib diisi")
-      .max(5000, "Catatan maksimal 5000 karakter"),
+      .min(1, "Catatan penolakan wajib diisi.")
+      .max(5000, "Catatan maksimal 5000 karakter."),
   })
   .strict();
 
 export type ValidasiQuery = z.infer<typeof validasiQuerySchema>;
+
 export type TolakBapInput = z.infer<typeof tolakBapSchema>;

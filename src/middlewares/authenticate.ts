@@ -3,15 +3,17 @@ import jwt from "jsonwebtoken";
 import { z } from "zod";
 import { env } from "../config/env";
 import { AppError } from "../shared/errors/app-error";
+import { canAccess } from "../config/accessPolicy";
 
 const uuidSchema = z.uuid();
-
 const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi"]);
+const platformSchema = z.enum(["web", "android"]);
 
 export interface AuthUser {
   id_user: string;
   role: "admin_pusat" | "admin_cabang" | "teknisi";
   id_unit: string | null;
+  platform: "web" | "android";
 }
 
 declare global {
@@ -48,15 +50,27 @@ export function authenticate(
 
     const validUserId = uuidSchema.safeParse(decoded.id_user);
     const validRole = userRoleSchema.safeParse(decoded.role);
+    const validPlatform = platformSchema.safeParse(decoded.platform);
 
     const validUnitId =
       decoded.id_unit === null
         ? true
         : uuidSchema.safeParse(decoded.id_unit).success;
 
-    if (!validUserId.success || !validRole.success || !validUnitId) {
+    if (
+      !validUserId.success ||
+      !validRole.success ||
+      !validPlatform.success ||
+      !validUnitId
+    ) {
       return next(
         new AppError(401, "INVALID_TOKEN", "Token autentikasi tidak valid"),
+      );
+    }
+
+    if (!canAccess(validRole.data, validPlatform.data)) {
+      return next(
+        new AppError(403, "PLATFORM_NOT_ALLOWED", "Akses tidak diizinkan"),
       );
     }
 
@@ -64,6 +78,7 @@ export function authenticate(
       id_user: validUserId.data,
       role: validRole.data,
       id_unit: decoded.id_unit as string | null,
+      platform: validPlatform.data,
     };
 
     next();

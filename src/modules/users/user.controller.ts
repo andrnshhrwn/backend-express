@@ -71,6 +71,31 @@ export const userController = {
     }
   },
 
+  async createTeknisi(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      if (!req.user || req.user.role !== "admin_cabang") {
+        throw new AppError(403, "FORBIDDEN", "Akses hanya untuk admin cabang");
+      }
+
+      const data = await userService.createTeknisiByUnit(
+        req.body,
+        req.user.id_unit,
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Teknisi berhasil ditambahkan",
+        data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const data = await userService.create(req.body);

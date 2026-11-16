@@ -1,15 +1,19 @@
+
 import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../shared/errors/app-error";
+import type { AuthUser } from "../../middlewares/authenticate";
 import { pengirimanWmService } from "./pengiriman-wm.service";
 
-function getUserId(req: Request): string {
-  const id_user = req.user?.id_user;
-
-  if (typeof id_user !== "string" || !id_user) {
-    throw new AppError(401, "UNAUTHORIZED", "Pengguna belum terautentikasi");
+function getAuthUser(req: Request): AuthUser {
+  if (!req.user) {
+    throw new AppError(
+      401,
+      "UNAUTHORIZED",
+      "Pengguna belum terautentikasi",
+    );
   }
 
-  return id_user;
+  return req.user;
 }
 
 function getPengirimanId(req: Request): string {
@@ -27,9 +31,10 @@ function getPengirimanId(req: Request): string {
 }
 
 export const pengirimanWmController = {
-  async findAll(_req: Request, res: Response, next: NextFunction) {
+  async findAll(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = await pengirimanWmService.findAll();
+      const user = getAuthUser(req);
+      const data = await pengirimanWmService.findAll(user);
 
       res.status(200).json({
         status: "success",
@@ -43,8 +48,13 @@ export const pengirimanWmController = {
 
   async findById(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = getAuthUser(req);
       const id_pengiriman = getPengirimanId(req);
-      const data = await pengirimanWmService.findById(id_pengiriman);
+
+      const data = await pengirimanWmService.findById(
+        id_pengiriman,
+        user,
+      );
 
       res.status(200).json({
         status: "success",
@@ -58,8 +68,8 @@ export const pengirimanWmController = {
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const id_user_pusat = getUserId(req);
-      const data = await pengirimanWmService.create(req.body, id_user_pusat);
+      const user = getAuthUser(req);
+      const data = await pengirimanWmService.create(req.body, user);
 
       res.status(201).json({
         status: "success",
@@ -73,10 +83,13 @@ export const pengirimanWmController = {
 
   async update(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = getAuthUser(req);
       const id_pengiriman = getPengirimanId(req);
+
       const data = await pengirimanWmService.update(
         id_pengiriman,
         req.body,
+        user,
       );
 
       res.status(200).json({
@@ -91,9 +104,10 @@ export const pengirimanWmController = {
 
   async delete(req: Request, res: Response, next: NextFunction) {
     try {
+      const user = getAuthUser(req);
       const id_pengiriman = getPengirimanId(req);
 
-      await pengirimanWmService.delete(id_pengiriman);
+      await pengirimanWmService.delete(id_pengiriman, user);
 
       res.status(200).json({
         status: "success",

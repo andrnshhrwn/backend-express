@@ -13,6 +13,12 @@ type CreateUserInput = {
   id_unit?: string | null;
 };
 
+type CreateTeknisiInput = {
+  fullname: string;
+  username: string;
+  password: string;
+};
+
 type UpdateUserInput = {
   fullname?: string;
   username?: string;
@@ -48,6 +54,7 @@ export const userService = {
     return userRepository.findTeknisiByUnit(id_unit);
   },
 
+  // Pembuatan semua jenis akun oleh Admin Pusat
   async create(data: CreateUserInput) {
     const existingUser = await userRepository.findByUsername(data.username);
 
@@ -78,6 +85,7 @@ export const userService = {
     if (data.id_unit != null) {
       const unit = await prisma.unit.findUnique({
         where: { id_unit: data.id_unit },
+        select: { id_unit: true },
       });
 
       if (!unit) {
@@ -93,6 +101,46 @@ export const userService = {
       password: hashedPassword,
       role: data.role,
       id_unit: data.id_unit ?? null,
+    });
+  },
+
+  // Pembuatan Teknisi oleh Admin Cabang untuk unitnya sendiri
+  async createTeknisiByUnit(data: CreateTeknisiInput, id_unit: string | null) {
+    if (id_unit === null) {
+      throw new AppError(
+        403,
+        "UNIT_ACCESS_DENIED",
+        "Admin cabang tidak terikat pada unit",
+      );
+    }
+
+    const existingUser = await userRepository.findByUsername(data.username);
+
+    if (existingUser) {
+      throw new AppError(
+        409,
+        "USERNAME_ALREADY_EXISTS",
+        "Username sudah digunakan",
+      );
+    }
+
+    const unit = await prisma.unit.findUnique({
+      where: { id_unit },
+      select: { id_unit: true },
+    });
+
+    if (!unit) {
+      throw new AppError(404, "UNIT_NOT_FOUND", "Unit tidak ditemukan");
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 12);
+
+    return userRepository.create({
+      fullname: data.fullname,
+      username: data.username,
+      password: hashedPassword,
+      role: "teknisi",
+      id_unit,
     });
   },
 
@@ -134,6 +182,7 @@ export const userService = {
     if (nextUnit != null) {
       const unit = await prisma.unit.findUnique({
         where: { id_unit: nextUnit },
+        select: { id_unit: true },
       });
 
       if (!unit) {

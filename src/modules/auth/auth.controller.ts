@@ -7,7 +7,13 @@ export const authController = {
     try {
       const { username, password } = req.body;
 
-      const result = await authService.login(username, password);
+      const clientPlatform = req.headers["x-client-platform"];
+
+      const result = await authService.login(
+        username,
+        password,
+        clientPlatform,
+      );
 
       res.status(200).json({
         success: true,

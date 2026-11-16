@@ -3,6 +3,10 @@ import { dashboardService } from "./dashboard.service";
 import { success } from "../../shared/http/response";
 import { AppError } from "../../shared/errors/app-error";
 
+function getQueryString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
 export const dashboardController = {
   async getSummary(req: Request, res: Response, next: NextFunction) {
     try {
@@ -10,10 +14,10 @@ export const dashboardController = {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const periode =
-        typeof req.query.periode === "string" ? req.query.periode : undefined;
+      const periode = getQueryString(req.query.periode);
+      const idUnit = getQueryString(req.query.id_unit);
 
-      const data = await dashboardService.getSummary(req.user, periode);
+      const data = await dashboardService.getSummary(req.user, periode, idUnit);
 
       return success(res, 200, {
         message: "Ringkasan dashboard berhasil diambil.",
@@ -30,10 +34,14 @@ export const dashboardController = {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
       }
 
-      const periode =
-        typeof req.query.periode === "string" ? req.query.periode : undefined;
+      const periode = getQueryString(req.query.periode);
+      const idUnit = getQueryString(req.query.id_unit);
 
-      const data = await dashboardService.getUnitProgress(req.user, periode);
+      const data = await dashboardService.getUnitProgress(
+        req.user,
+        periode,
+        idUnit,
+      );
 
       return success(res, 200, {
         message: "Progres unit berhasil diambil.",

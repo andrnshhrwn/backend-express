@@ -7,7 +7,7 @@ const pengirimanSelect = {
   tgl_pengiriman: true,
   total_wm: true,
   catatan: true,
-  id_user_pusat: true,
+  id_user_pencatat: true,
   created_at: true,
 
   unit_tujuan: {
@@ -17,7 +17,7 @@ const pengirimanSelect = {
     },
   },
 
-  user_pusat: {
+  user_pencatat: {
     select: {
       id_user: true,
       fullname: true,
@@ -43,45 +43,65 @@ const pengirimanSelect = {
   },
 } as const;
 
+type DetailPengirimanInput = {
+  id_merk: string;
+  ukuran_dn: string;
+  jumlah: number;
+};
+
 type CreatePengirimanRepositoryInput = {
   no_pengiriman: string;
   id_unit_tujuan: string;
   tgl_pengiriman: Date;
   catatan?: string | null;
-  id_user_pusat: string;
-  details: {
-    id_merk: string;
-    ukuran_dn: string;
-    jumlah: number;
-  }[];
+  id_user_pencatat: string;
+  details: DetailPengirimanInput[];
 };
 
 type UpdatePengirimanRepositoryInput = {
   no_pengiriman?: string;
-  id_unit_tujuan?: string;
   tgl_pengiriman?: Date;
   catatan?: string | null;
+  details?: DetailPengirimanInput[];
 };
 
 export const pengirimanWmRepository = {
-  findAll() {
+  findAll(id_unit?: string) {
     return prisma.pengirimanWm.findMany({
+      where: id_unit
+        ? {
+            id_unit_tujuan: id_unit,
+          }
+        : undefined,
       select: pengirimanSelect,
-      orderBy: { id_pengiriman: "desc" },
+      orderBy: {
+        id_pengiriman: "desc",
+      },
     });
   },
 
-  findById(id_pengiriman: string) {
-    return prisma.pengirimanWm.findUnique({
-      where: { id_pengiriman },
+  findById(id_pengiriman: string, id_unit?: string) {
+    return prisma.pengirimanWm.findFirst({
+      where: {
+        id_pengiriman,
+        ...(id_unit
+          ? {
+              id_unit_tujuan: id_unit,
+            }
+          : {}),
+      },
       select: pengirimanSelect,
     });
   },
 
   findByNoPengiriman(no_pengiriman: string) {
     return prisma.pengirimanWm.findUnique({
-      where: { no_pengiriman },
-      select: { id_pengiriman: true },
+      where: {
+        no_pengiriman,
+      },
+      select: {
+        id_pengiriman: true,
+      },
     });
   },
 
@@ -101,17 +121,37 @@ export const pengirimanWmRepository = {
   },
 
   update(id_pengiriman: string, data: UpdatePengirimanRepositoryInput) {
+    const { details, ...pengirimanData } = data;
+
     return prisma.pengirimanWm.update({
-      where: { id_pengiriman },
-      data,
+      where: {
+        id_pengiriman,
+      },
+      data: {
+        ...pengirimanData,
+
+        ...(details
+          ? {
+              total_wm: details.reduce((total, item) => total + item.jumlah, 0),
+              details: {
+                deleteMany: {},
+                create: details,
+              },
+            }
+          : {}),
+      },
       select: pengirimanSelect,
     });
   },
 
   delete(id_pengiriman: string) {
     return prisma.pengirimanWm.delete({
-      where: { id_pengiriman },
-      select: { id_pengiriman: true },
+      where: {
+        id_pengiriman,
+      },
+      select: {
+        id_pengiriman: true,
+      },
     });
   },
 };

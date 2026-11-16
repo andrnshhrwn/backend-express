@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -43,6 +42,13 @@ enum StatusValidasi {
   @@map("status_validasi")
 }
 
+enum TahapPenggantian {
+  data_wm_lama
+  menunggu_validasi
+
+  @@map("tahap_penggantian")
+}
+
 model Unit {
   id_unit   String @id @default(uuid()) @db.Char(36)
   kode_unit String @unique @db.VarChar(20)
@@ -73,6 +79,7 @@ model MerkWm {
   wm_digit Int
 
   pengiriman_detail PengirimanWmDetail[]
+  penggantian       PenggantianWm[]
 
   @@map("merk_wm")
 }
@@ -96,17 +103,17 @@ model User {
 }
 
 model PengirimanWm {
-  id_pengiriman  String    @id @default(uuid()) @db.Char(36)
-  no_pengiriman  String    @unique @db.VarChar(50)
-  id_unit_tujuan String    @db.Char(36)
-  tgl_pengiriman DateTime  @db.Date
-  total_wm       Int       @default(0)
-  catatan        String?   @db.Text
-  id_user_pusat  String    @db.Char(36)
-  created_at     DateTime? @default(now()) @db.DateTime(0)
+  id_pengiriman    String    @id @default(uuid()) @db.Char(36)
+  no_pengiriman    String    @unique @db.VarChar(50)
+  id_unit_tujuan   String    @db.Char(36)
+  tgl_pengiriman   DateTime  @db.Date
+  total_wm         Int       @default(0)
+  catatan          String?   @db.Text
+  id_user_pencatat String    @map("id_user_pusat") @db.Char(36)
+  created_at       DateTime? @default(now()) @db.DateTime(0)
 
-  unit_tujuan Unit @relation("UnitTujuan", fields: [id_unit_tujuan], references: [id_unit])
-  user_pusat  User @relation("PengirimanCreator", fields: [id_user_pusat], references: [id_user])
+  unit_tujuan   Unit @relation("UnitTujuan", fields: [id_unit_tujuan], references: [id_unit])
+  user_pencatat User @relation("PengirimanCreator", fields: [id_user_pencatat], references: [id_user])
 
   details PengirimanWmDetail[]
 
@@ -167,29 +174,37 @@ model Penugasan {
 }
 
 model PenggantianWm {
-  id_penggantian        String         @id @default(uuid()) @db.Char(36)
-  id_penugasan          String         @db.Char(36)
-  no_seri_wm_lama       String?        @unique @db.VarChar(50)
+  id_penggantian String @id @default(uuid()) @db.Char(36)
+  id_penugasan   String @db.Char(36)
+
+  // Data WM lama - diisi pada tahap pertama
+  no_seri_wm_lama       String?       @unique @db.VarChar(50)
   stand_wm_lama         Int?
   kondisi_fisik_wm_lama KondisiWmLama
-  path_image_wm_lama    String?        @db.VarChar(255)
-  no_seri_wm_baru       String         @unique @db.VarChar(50)
-  stand_awal_wm_baru    Int            @default(0)
-  path_image_wm_baru    String         @db.VarChar(255)
-  id_teknisi            String         @db.Char(36)
-  tgl_penggantian       DateTime       @db.DateTime(0)
-  status_validasi       StatusValidasi @default(menunggu)
-  catatan_validasi      String?        @db.Text
+  path_image_wm_lama    String?       @db.VarChar(255)
+
+  // Data WM baru - diisi pada tahap penyelesaian
+  no_seri_wm_baru    String?   @unique @db.VarChar(50)
+  stand_awal_wm_baru Int?
+  path_image_wm_baru String?   @db.VarChar(255)
+  tgl_penggantian    DateTime? @db.DateTime(0)
+  id_merk            String?   @db.Char(36)
+
+  id_teknisi        String           @db.Char(36)
+  tahap_penggantian TahapPenggantian @default(data_wm_lama)
+  status_validasi   StatusValidasi?
+  catatan_validasi  String?          @db.Text
 
   penugasan Penugasan @relation(fields: [id_penugasan], references: [id_penugasan])
   teknisi   User      @relation("PenggantianTeknisi", fields: [id_teknisi], references: [id_user])
+  merk      MerkWm?   @relation(fields: [id_merk], references: [id_merk])
 
   @@map("penggantian_wm")
 }
 
 model SpkSequence {
   tanggal     String @id @db.Char(8)
-  last_number Int   @default(0)
+  last_number Int    @default(0)
 
   @@map("spk_sequences")
 }

@@ -12,21 +12,42 @@ const router = Router();
 
 router.use(authenticate);
 
-router.use(authorize("admin_pusat"));
+// Admin Pusat dan Admin Cabang dapat melihat data.
+// Pembatasan data cabang dilakukan di service dan repository.
+router.get(
+  "/",
+  authorize("admin_pusat", "admin_cabang"),
+  pengirimanWmController.findAll,
+);
 
-router.get("/", pengirimanWmController.findAll);
+router.get(
+  "/:id",
+  authorize("admin_pusat", "admin_cabang"),
+  validatePengirimanId,
+  pengirimanWmController.findById,
+);
 
-router.get("/:id", validatePengirimanId, pengirimanWmController.findById);
-
-router.post("/", validateCreatePengiriman, pengirimanWmController.create);
+// Hanya Admin Cabang yang dapat mengelola pengiriman.
+router.post(
+  "/",
+  authorize("admin_cabang"),
+  validateCreatePengiriman,
+  pengirimanWmController.create,
+);
 
 router.patch(
   "/:id",
+  authorize("admin_cabang"),
   validatePengirimanId,
   validateUpdatePengiriman,
   pengirimanWmController.update,
 );
 
-router.delete("/:id", validatePengirimanId, pengirimanWmController.delete);
+router.delete(
+  "/:id",
+  authorize("admin_cabang"),
+  validatePengirimanId,
+  pengirimanWmController.delete,
+);
 
 export default router;

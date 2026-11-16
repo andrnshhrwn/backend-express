@@ -3,6 +3,7 @@ import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
 import { userController } from "./user.controller";
 import {
+  validateCreateTeknisi,
   validateCreateUser,
   validateUpdateUser,
   validateUserId,
@@ -12,8 +13,17 @@ const router = Router();
 
 router.use(authenticate);
 
+// Khusus Admin Cabang
 router.get("/teknisi", authorize("admin_cabang"), userController.findTeknisi);
 
+router.post(
+  "/teknisi",
+  authorize("admin_cabang"),
+  validateCreateTeknisi,
+  userController.createTeknisi,
+);
+
+// Semua route berikutnya khusus Admin Pusat
 router.use(authorize("admin_pusat"));
 
 router.get("/", userController.findAll);

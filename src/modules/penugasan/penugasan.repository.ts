@@ -17,7 +17,11 @@ export const penugasanRepository = {
       },
       orderBy: { id_penugasan: "desc" },
       include: {
-        pelanggan: true,
+        pelanggan: {
+          include: {
+            tarif: true, // <-- Menyertakan relasi TipeTarif (kode_tarif, nama_tarif)
+          },
+        },
         unit: true,
         pembuat: {
           select: {
@@ -47,7 +51,11 @@ export const penugasanRepository = {
           : {}),
       },
       include: {
-        pelanggan: true,
+        pelanggan: {
+          include: {
+            tarif: true, // <-- Menyertakan relasi TipeTarif
+          },
+        },
         unit: true,
         pembuat: {
           select: {
@@ -70,6 +78,7 @@ export const penugasanRepository = {
   findPelangganById(id: string) {
     return prisma.pelanggan.findUnique({
       where: { id_pelanggan: id },
+      include: { tarif: true },
     });
   },
 
@@ -125,7 +134,9 @@ export const penugasanRepository = {
         status: "pending",
       },
       include: {
-        pelanggan: true,
+        pelanggan: {
+          include: { tarif: true },
+        },
         unit: true,
         pembuat: {
           select: {
@@ -148,7 +159,9 @@ export const penugasanRepository = {
       where: { id_penugasan: id },
       data,
       include: {
-        pelanggan: true,
+        pelanggan: {
+          include: { tarif: true },
+        },
         unit: true,
         teknisi: {
           select: {
@@ -171,7 +184,9 @@ export const penugasanRepository = {
       where: { id_penugasan: id },
       data: { id_teknisi: idTeknisi },
       include: {
-        pelanggan: true,
+        pelanggan: {
+          include: { tarif: true },
+        },
         unit: true,
         teknisi: {
           select: {

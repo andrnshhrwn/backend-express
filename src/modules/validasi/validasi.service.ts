@@ -1,6 +1,19 @@
 import { AppError } from "../../shared/errors/app-error";
 import { validasiRepository } from "./validasi.repository";
+
 import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
+
+type ReadScope =
+  | {
+      id_user: string;
+      role: "admin_pusat";
+      id_unit: string | null;
+    }
+  | {
+      id_user: string;
+      role: "admin_cabang";
+      id_unit: string;
+    };
 
 type AdminScope = {
   id_user: string;
@@ -8,13 +21,38 @@ type AdminScope = {
   id_unit: string | null;
 };
 
+function handleValidationError(kind: string): never {
+  switch (kind) {
+    case "PENUGASAN_BELUM_SELESAI":
+      throw new AppError(
+        409,
+        "PENUGASAN_BELUM_SELESAI",
+        "SPK harus berstatus selesai sebelum BAP dapat divalidasi.",
+      );
+
+    case "BAP_DATA_BELUM_LENGKAP":
+      throw new AppError(
+        409,
+        "BAP_DATA_BELUM_LENGKAP",
+        "BAP belum lengkap. Pastikan kondisi fisik WM lama, nomor seri WM baru, stand awal WM baru, kedua foto, dan tanggal penggantian tersedia.",
+      );
+
+    default:
+      throw new AppError(
+        500,
+        "INTERNAL_SERVER_ERROR",
+        "Terjadi kesalahan saat memproses validasi BAP.",
+      );
+  }
+}
+
 export const validasiService = {
-  async getAll(filters: ValidasiQuery, admin: AdminScope) {
-    return validasiRepository.findAll(filters, admin);
+  async getAll(filters: ValidasiQuery, actor: ReadScope) {
+    return validasiRepository.findAll(filters, actor);
   },
 
-  async getById(id: string, admin: AdminScope) {
-    const data = await validasiRepository.findById(id, admin);
+  async getById(id: string, actor: ReadScope) {
+    const data = await validasiRepository.findById(id, actor);
 
     if (!data) {
       throw new AppError(404, "BAP_NOT_FOUND", "BAP tidak ditemukan.");
@@ -23,7 +61,15 @@ export const validasiService = {
     return data;
   },
 
-  async setujui(id: string, _admin: AdminScope) {
+  async setujui(id: string, admin: AdminScope) {
+    if (admin.role !== "admin_pusat") {
+      throw new AppError(
+        403,
+        "FORBIDDEN",
+        "Hanya Admin Pusat yang dapat menyetujui BAP.",
+      );
+    }
+
     const result = await validasiRepository.setujui(id);
 
     switch (result.kind) {
@@ -37,12 +83,9 @@ export const validasiService = {
           "BAP sudah divalidasi sebelumnya.",
         );
 
-      case "PENUGASAN_INACTIVE":
-        throw new AppError(
-          409,
-          "PENUGASAN_TIDAK_AKTIF",
-          "SPK sudah selesai atau dibatalkan.",
-        );
+      case "PENUGASAN_BELUM_SELESAI":
+      case "BAP_DATA_BELUM_LENGKAP":
+        return handleValidationError(result.kind);
 
       case "OTHER_BAP_APPROVED":
         throw new AppError(
@@ -56,7 +99,15 @@ export const validasiService = {
     }
   },
 
-  async tolak(id: string, input: TolakBapInput, _admin: AdminScope) {
+  async tolak(id: string, input: TolakBapInput, admin: AdminScope) {
+    if (admin.role !== "admin_pusat") {
+      throw new AppError(
+        403,
+        "FORBIDDEN",
+        "Hanya Admin Pusat yang dapat menolak BAP.",
+      );
+    }
+
     const result = await validasiRepository.tolak(id, input);
 
     switch (result.kind) {
@@ -70,12 +121,9 @@ export const validasiService = {
           "BAP sudah divalidasi sebelumnya.",
         );
 
-      case "PENUGASAN_INACTIVE":
-        throw new AppError(
-          409,
-          "PENUGASAN_TIDAK_AKTIF",
-          "SPK sudah selesai atau dibatalkan.",
-        );
+      case "PENUGASAN_BELUM_SELESAI":
+      case "BAP_DATA_BELUM_LENGKAP":
+        return handleValidationError(result.kind);
 
       case "REJECTED":
         return result.data;

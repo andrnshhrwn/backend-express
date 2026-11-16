@@ -1,6 +1,25 @@
 import type { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
+
 import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
+
+type ReadScope =
+  | {
+      id_user: string;
+      role: "admin_pusat";
+      id_unit: string | null;
+    }
+  | {
+      id_user: string;
+      role: "admin_cabang";
+      id_unit: string;
+    };
+
+type AdminScope = {
+  id_user: string;
+  role: "admin_pusat";
+  id_unit: string | null;
+};
 
 const validasiInclude = {
   penugasan: {
@@ -25,21 +44,55 @@ const validasiInclude = {
       role: true,
     },
   },
+  merk: {
+    select: {
+      id_merk: true,
+      kode_wm: true,
+      merk_wm: true,
+      wm_digit: true,
+    },
+  },
 } satisfies Prisma.PenggantianWmInclude;
 
-type AdminScope = {
-  id_user: string;
-  role: "admin_pusat";
-  id_unit: string | null;
-};
+function scopeWhere(scope: ReadScope): Prisma.PenggantianWmWhereInput {
+  if (scope.role === "admin_pusat") {
+    return {};
+  }
 
-function scopeWhere(_scope: AdminScope): Prisma.PenggantianWmWhereInput {
-  // Admin Pusat memiliki akses monitoring seluruh unit.
-  return {};
+  return {
+    penugasan: {
+      is: {
+        id_unit: scope.id_unit,
+      },
+    },
+  };
+}
+
+function isBapComplete(bap: {
+  tahap_penggantian: string;
+  kondisi_fisik_wm_lama: string | null;
+  id_merk: string | null;
+  no_seri_wm_baru: string | null;
+  stand_awal_wm_baru: number | null;
+  path_image_wm_lama: string | null;
+  path_image_wm_baru: string | null;
+  tgl_penggantian: Date | null;
+}): boolean {
+  return (
+    bap.tahap_penggantian === "menunggu_validasi" &&
+    Boolean(bap.kondisi_fisik_wm_lama) &&
+    Boolean(bap.id_merk) &&
+    Boolean(bap.no_seri_wm_baru?.trim()) &&
+    bap.stand_awal_wm_baru !== null &&
+    bap.stand_awal_wm_baru !== undefined &&
+    Boolean(bap.path_image_wm_lama?.trim()) &&
+    Boolean(bap.path_image_wm_baru?.trim()) &&
+    bap.tgl_penggantian !== null
+  );
 }
 
 export const validasiRepository = {
-  async findAll(filters: ValidasiQuery, scope: AdminScope) {
+  async findAll(filters: ValidasiQuery, scope: ReadScope) {
     const { page = 1, limit = 20, status_validasi } = filters;
 
     const where: Prisma.PenggantianWmWhereInput = {
@@ -69,7 +122,7 @@ export const validasiRepository = {
     };
   },
 
-  findById(id: string, scope: AdminScope) {
+  findById(id: string, scope: ReadScope) {
     return prisma.penggantianWm.findFirst({
       where: {
         id_penggantian: id,
@@ -81,10 +134,6 @@ export const validasiRepository = {
 
   async setujui(id: string) {
     return prisma.$transaction(async (tx) => {
-      /*
-       * Ambil relasi SPK terlebih dahulu.
-       * Belum melakukan perubahan data pada tahap ini.
-       */
       const initialBap = await tx.penggantianWm.findUnique({
         where: { id_penggantian: id },
         select: { id_penugasan: true },
@@ -94,11 +143,6 @@ export const validasiRepository = {
         return { kind: "NOT_FOUND" as const };
       }
 
-      /*
-       * Kunci baris SPK terlebih dahulu.
-       * BAP lain yang terkait SPK yang sama harus menunggu
-       * transaksi ini selesai.
-       */
       const lockedPenugasan = await tx.$queryRaw<
         Array<{ id_penugasan: string }>
       >`
@@ -112,9 +156,6 @@ export const validasiRepository = {
         return { kind: "NOT_FOUND" as const };
       }
 
-      /*
-       * Setelah SPK terkunci, kunci baris BAP.
-       */
       const lockedBap = await tx.$queryRaw<Array<{ id_penggantian: string }>>`
         SELECT id_penggantian
         FROM penggantian_wm
@@ -146,39 +187,26 @@ export const validasiRepository = {
         return { kind: "ALREADY_PROCESSED" as const };
       }
 
-      if (
-        bap.penugasan.status === "selesai" ||
-        bap.penugasan.status === "dibatalkan"
-      ) {
-        return { kind: "PENUGASAN_INACTIVE" as const };
+      if (bap.penugasan.status !== "selesai") {
+        return { kind: "PENUGASAN_BELUM_SELESAI" as const };
       }
 
-      /*
-       * Pastikan SPK belum memiliki BAP lain yang disetujui.
-       * Pemeriksaan dilakukan setelah baris SPK dikunci.
-       */
+      if (!isBapComplete(bap)) {
+        return { kind: "BAP_DATA_BELUM_LENGKAP" as const };
+      }
+
       const approved = await tx.penggantianWm.findFirst({
         where: {
           id_penugasan: bap.id_penugasan,
           status_validasi: "disetujui",
           id_penggantian: { not: id },
         },
-        select: {
-          id_penggantian: true,
-        },
+        select: { id_penggantian: true },
       });
 
       if (approved) {
         return { kind: "OTHER_BAP_APPROVED" as const };
       }
-
-      await tx.penggantianWm.update({
-        where: { id_penggantian: id },
-        data: {
-          status_validasi: "disetujui",
-          catatan_validasi: null,
-        },
-      });
 
       await tx.pelanggan.update({
         where: {
@@ -189,12 +217,11 @@ export const validasiRepository = {
         },
       });
 
-      await tx.penugasan.update({
-        where: {
-          id_penugasan: bap.id_penugasan,
-        },
+      await tx.penggantianWm.update({
+        where: { id_penggantian: id },
         data: {
-          status: "selesai",
+          status_validasi: "disetujui",
+          catatan_validasi: null,
         },
       });
 
@@ -221,10 +248,6 @@ export const validasiRepository = {
         return { kind: "NOT_FOUND" as const };
       }
 
-      /*
-       * Kunci SPK terlebih dahulu agar proses penolakan
-       * terserialisasi dengan proses persetujuan pada SPK sama.
-       */
       const lockedPenugasan = await tx.$queryRaw<
         Array<{ id_penugasan: string }>
       >`
@@ -264,11 +287,12 @@ export const validasiRepository = {
         return { kind: "ALREADY_PROCESSED" as const };
       }
 
-      if (
-        bap.penugasan.status === "selesai" ||
-        bap.penugasan.status === "dibatalkan"
-      ) {
-        return { kind: "PENUGASAN_INACTIVE" as const };
+      if (bap.penugasan.status !== "selesai") {
+        return { kind: "PENUGASAN_BELUM_SELESAI" as const };
+      }
+
+      if (!isBapComplete(bap)) {
+        return { kind: "BAP_DATA_BELUM_LENGKAP" as const };
       }
 
       const data = await tx.penggantianWm.update({

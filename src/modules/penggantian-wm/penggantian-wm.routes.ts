@@ -1,17 +1,44 @@
 import { Router } from "express";
+
 import { authenticate } from "../../middlewares/authenticate";
 import { authorize } from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
-import { penggantianWmController } from "./penggantian-wm.controller";
+
 import {
-  createPenggantianWmSchema,
-  listPenggantianWmQuerySchema,
+  cleanupPenggantianWmFilesOnError,
+  uploadFotoWmLama,
+  uploadFotoWmBaru,
+  uploadFotoPerbaikanBap,
+} from "../../middlewares/upload";
+
+import { penggantianWmController } from "./penggantian-wm.controller";
+
+import {
+  penugasanIdSchema,
   penggantianWmIdSchema,
+  submitDataWmLamaSchema,
+  selesaikanPenggantianWmSchema,
+  perbaikiPenggantianWmSchema,
+  listPenggantianWmQuerySchema,
 } from "./penggantian-wm.validator";
 
 const router = Router();
 
 router.use(authenticate);
+
+// ===================================================
+// RINGKASAN STOK WM
+// ===================================================
+
+router.get(
+  "/stok",
+  authorize("admin_pusat", "admin_cabang"),
+  penggantianWmController.getStok,
+);
+
+// ===================================================
+// DAFTAR DAN DETAIL BAP
+// ===================================================
 
 router.get(
   "/",
@@ -27,11 +54,45 @@ router.get(
   penggantianWmController.getById,
 );
 
+// ===================================================
+// TAHAP 1: DATA WM LAMA
+// ===================================================
+
 router.post(
-  "/",
+  "/:id_penugasan/data-wm-lama",
   authorize("teknisi"),
-  validate(createPenggantianWmSchema),
-  penggantianWmController.create,
+  uploadFotoWmLama,
+  validate(penugasanIdSchema, "params"),
+  validate(submitDataWmLamaSchema),
+  penggantianWmController.submitDataWmLama,
 );
+
+// ===================================================
+// TAHAP 2: SELESAIKAN PEMASANGAN WM BARU
+// ===================================================
+
+router.post(
+  "/:id/selesaikan",
+  authorize("teknisi"),
+  uploadFotoWmBaru,
+  validate(penggantianWmIdSchema, "params"),
+  validate(selesaikanPenggantianWmSchema),
+  penggantianWmController.selesaikan,
+);
+
+// ===================================================
+// PERBAIKAN DAN PENGAJUAN ULANG BAP
+// ===================================================
+
+router.patch(
+  "/:id/perbaiki",
+  authorize("teknisi"),
+  uploadFotoPerbaikanBap,
+  validate(penggantianWmIdSchema, "params"),
+  validate(perbaikiPenggantianWmSchema),
+  penggantianWmController.perbaiki,
+);
+
+router.use(cleanupPenggantianWmFilesOnError);
 
 export default router;

@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import path from "node:path";
+
 import { env } from "./config/env.js";
 import { errorHandler } from "./middlewares/error-handler.js";
 import { success } from "./shared/http/response.js";
@@ -26,11 +28,17 @@ app.use(
   cors({
     origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Client-Platform"],
   }),
 );
 
 app.use(express.json({ limit: "1mb" }));
+
+// Menyajikan file foto yang tersimpan di folder uploads
+app.use(
+  "/uploads",
+  express.static(path.resolve(process.cwd(), env.UPLOAD_DIR)),
+);
 
 app.get("/health", (_req, res) => {
   return success(res, 200, {
