@@ -82,13 +82,13 @@ export function authenticate(
     };
 
     next();
-  } catch {
-    next(
-      new AppError(
-        401,
-        "INVALID_TOKEN",
-        "Token tidak valid atau sudah kedaluwarsa",
-      ),
-    );
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return next(
+        new AppError(401, "TOKEN_EXPIRED", "Token sudah kedaluwarsa"),
+      );
+    }
+
+    next(new AppError(401, "INVALID_TOKEN", "Token autentikasi tidak valid"));
   }
 }
