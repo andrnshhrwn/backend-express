@@ -83,7 +83,6 @@ export const authService = {
     }
 
     const platform = platformResult.data;
-
     const user = await authRepository.findByUsername(username);
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -105,11 +104,7 @@ export const authService = {
     const token = signAccess(user, platform);
     const refresh_token = await issueRefresh(user.id_user, platform);
 
-    return {
-      token,
-      refresh_token,
-      user: toUserDto(user),
-    };
+    return { token, refresh_token, user: toUserDto(user) };
   },
 
   async refresh(rawToken: string) {

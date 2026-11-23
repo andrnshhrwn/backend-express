@@ -7,7 +7,7 @@ const userIdSchema = z.object({
   id: uuidSchema,
 });
 
-const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi"], {
+const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi", "pimpinan"], {
   message: "Role pengguna tidak valid",
 });
 

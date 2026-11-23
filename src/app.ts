@@ -22,6 +22,8 @@ import validasiRoutes from "./modules/validasi/validasi.routes";
 
 import dashboardRoutes from "./modules/dashboard/dashboard.routes";
 
+import laporanRoutes from "./modules/laporan/laporan.routes";
+
 export const app = express();
 
 app.use(
@@ -62,6 +64,8 @@ app.use(env.API_PREFIX + "/penggantian-wm", penggantianWmRoutes);
 app.use(env.API_PREFIX + "/validasi", validasiRoutes);
 
 app.use(env.API_PREFIX + "/dashboard", dashboardRoutes);
+
+app.use(env.API_PREFIX + "/laporan", laporanRoutes);
 
 app.use(env.API_PREFIX, (_req, res) => {
   return res.status(404).json({

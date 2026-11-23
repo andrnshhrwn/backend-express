@@ -1,10 +1,11 @@
 export type Platform = "web" | "android";
-export type Role = "admin_pusat" | "admin_cabang" | "teknisi";
+export type Role = "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
 
 export const ROLE_PLATFORMS: Record<Role, Platform[]> = {
   admin_pusat: ["web"],
   admin_cabang: ["web"],
   teknisi: ["android"],
+  pimpinan: ["web"],
 };
 
 export const isPlatform = (value: unknown): value is Platform =>

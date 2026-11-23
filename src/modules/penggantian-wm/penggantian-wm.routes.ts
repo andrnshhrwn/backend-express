@@ -5,7 +5,7 @@ import { authorize } from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
 
 import {
-  // cleanupPenggantianWmFilesOnError,
+  cleanupPenggantianWmFilesOnError,
   uploadFotoWmLama,
   uploadFotoWmBaru,
   uploadFotoPerbaikanBap,
@@ -93,6 +93,6 @@ router.patch(
   penggantianWmController.perbaiki,
 );
 
-// router.use(cleanupPenggantianWmFilesOnError);
+router.use(cleanupPenggantianWmFilesOnError);
 
 export default router;

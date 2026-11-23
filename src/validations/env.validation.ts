@@ -19,11 +19,11 @@ export const envSchema = z.object({
 
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(2097152),
 
-  SUPABASE_URL: z.url(),
+  // SUPABASE_URL: z.url(),
 
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  // SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
-  SUPABASE_STORAGE_BUCKET: z.string().min(1).default("penggantian-wm"),
+  // SUPABASE_STORAGE_BUCKET: z.string().min(1).default("penggantian-wm"),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

@@ -6,12 +6,17 @@ import { AppError } from "../shared/errors/app-error";
 import { canAccess } from "../config/accessPolicy";
 
 const uuidSchema = z.uuid();
-const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi"]);
+const userRoleSchema = z.enum([
+  "admin_pusat",
+  "admin_cabang",
+  "teknisi",
+  "pimpinan",
+]);
 const platformSchema = z.enum(["web", "android"]);
 
 export interface AuthUser {
   id_user: string;
-  role: "admin_pusat" | "admin_cabang" | "teknisi";
+  role: "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
   id_unit: string | null;
   platform: "web" | "android";
 }
