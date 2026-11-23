@@ -7,9 +7,23 @@ const userIdSchema = z.object({
   id: uuidSchema,
 });
 
-const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi", "pimpinan"], {
-  message: "Role pengguna tidak valid",
-});
+const userRoleSchema = z.enum(
+  ["admin_pusat", "admin_cabang", "teknisi", "pimpinan"],
+  {
+    message: "Role pengguna tidak valid",
+  },
+);
+
+// Role yang tidak terikat pada unit
+const GLOBAL_ROLES = ["admin_pusat", "pimpinan"] as const;
+
+function isGlobalRole(role: string): boolean {
+  return GLOBAL_ROLES.includes(role as (typeof GLOBAL_ROLES)[number]);
+}
+
+// ======================================================
+// CREATE USER
+// ======================================================
 
 const createUserSchema = z
   .object({
@@ -39,15 +53,15 @@ const createUserSchema = z
     id_unit: uuidSchema.nullable().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.role === "admin_pusat" && data.id_unit != null) {
+    if (isGlobalRole(data.role) && data.id_unit != null) {
       ctx.addIssue({
         code: "custom",
         path: ["id_unit"],
-        message: "Admin pusat tidak boleh terikat pada unit",
+        message: "Role ini tidak boleh terikat pada unit",
       });
     }
 
-    if (data.role !== "admin_pusat" && data.id_unit == null) {
+    if (!isGlobalRole(data.role) && data.id_unit == null) {
       ctx.addIssue({
         code: "custom",
         path: ["id_unit"],
@@ -55,6 +69,10 @@ const createUserSchema = z
       });
     }
   });
+
+// ======================================================
+// CREATE TEKNISI
+// ======================================================
 
 const createTeknisiSchema = z.object({
   fullname: z
@@ -78,6 +96,10 @@ const createTeknisiSchema = z.object({
     .min(8, "Password minimal 8 karakter")
     .max(72, "Password maksimal 72 karakter"),
 });
+
+// ======================================================
+// UPDATE USER
+// ======================================================
 
 const updateUserSchema = z
   .object({
@@ -112,20 +134,21 @@ const updateUserSchema = z
   )
   .superRefine((data, ctx) => {
     if (
-      data.role === "admin_pusat" &&
+      data.role !== undefined &&
+      isGlobalRole(data.role) &&
       data.id_unit !== undefined &&
       data.id_unit !== null
     ) {
       ctx.addIssue({
         code: "custom",
         path: ["id_unit"],
-        message: "Admin pusat tidak boleh terikat pada unit",
+        message: "Role ini tidak boleh terikat pada unit",
       });
     }
 
     if (
       data.role !== undefined &&
-      data.role !== "admin_pusat" &&
+      !isGlobalRole(data.role) &&
       data.id_unit === null
     ) {
       ctx.addIssue({
@@ -135,6 +158,10 @@ const updateUserSchema = z
       });
     }
   });
+
+// ======================================================
+// EXPORT VALIDATORS
+// ======================================================
 
 export const validateUserId = validate(userIdSchema, "params");
 

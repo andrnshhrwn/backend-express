@@ -8,7 +8,7 @@ type DashboardScope = {
 };
 
 function buildScope(user: AuthUser, requestedUnitId?: string): DashboardScope {
-  if (user.role === "admin_pusat") {
+  if (user.role === "admin_pusat", "pimpinan") {
     return requestedUnitId ? { id_unit: requestedUnitId } : {};
   }
 

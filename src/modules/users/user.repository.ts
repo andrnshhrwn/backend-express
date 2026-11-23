@@ -14,7 +14,7 @@ const userSelect = {
   },
 } as const;
 
-type UserRole = "admin_pusat" | "admin_cabang" | "teknisi";
+type UserRole = "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
 
 type CreateUserData = {
   fullname: string;

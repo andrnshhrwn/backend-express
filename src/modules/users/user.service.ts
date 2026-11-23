@@ -3,7 +3,7 @@ import { AppError } from "../../shared/errors/app-error";
 import { prisma } from "../../lib/prisma";
 import { userRepository } from "./user.repository";
 
-type UserRole = "admin_pusat" | "admin_cabang" | "teknisi";
+type UserRole = "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
 
 type CreateUserInput = {
   fullname: string;
@@ -27,10 +27,25 @@ type UpdateUserInput = {
   id_unit?: string | null;
 };
 
+// Role yang tidak terikat pada unit
+const GLOBAL_ROLES: UserRole[] = ["admin_pusat", "pimpinan"];
+
+function isGlobalRole(role: UserRole): boolean {
+  return GLOBAL_ROLES.includes(role);
+}
+
 export const userService = {
+  // ======================================================
+  // FIND ALL USERS
+  // ======================================================
+
   findAll() {
     return userRepository.findAll();
   },
+
+  // ======================================================
+  // FIND USER BY ID
+  // ======================================================
 
   async findById(id_user: string) {
     const user = await userRepository.findById(id_user);
@@ -41,6 +56,10 @@ export const userService = {
 
     return user;
   },
+
+  // ======================================================
+  // FIND TECHNICIAN BY UNIT
+  // ======================================================
 
   async findTeknisiByUnit(id_unit: string | null) {
     if (id_unit === null) {
@@ -54,7 +73,11 @@ export const userService = {
     return userRepository.findTeknisiByUnit(id_unit);
   },
 
-  // Pembuatan semua jenis akun oleh Admin Pusat
+  // ======================================================
+  // CREATE USER
+  // Khusus Admin Pusat
+  // ======================================================
+
   async create(data: CreateUserInput) {
     const existingUser = await userRepository.findByUsername(data.username);
 
@@ -66,15 +89,17 @@ export const userService = {
       );
     }
 
-    if (data.role === "admin_pusat" && data.id_unit != null) {
+    // Admin Pusat dan Pimpinan tidak terikat unit
+    if (isGlobalRole(data.role) && data.id_unit != null) {
       throw new AppError(
         400,
         "INVALID_USER_UNIT",
-        "Admin pusat tidak boleh terikat pada unit",
+        "Role ini tidak boleh terikat pada unit",
       );
     }
 
-    if (data.role !== "admin_pusat" && data.id_unit == null) {
+    // Admin Cabang dan Teknisi wajib memiliki unit
+    if (!isGlobalRole(data.role) && data.id_unit == null) {
       throw new AppError(
         400,
         "USER_UNIT_REQUIRED",
@@ -82,10 +107,15 @@ export const userService = {
       );
     }
 
+    // Pastikan unit tersedia
     if (data.id_unit != null) {
       const unit = await prisma.unit.findUnique({
-        where: { id_unit: data.id_unit },
-        select: { id_unit: true },
+        where: {
+          id_unit: data.id_unit,
+        },
+        select: {
+          id_unit: true,
+        },
       });
 
       if (!unit) {
@@ -93,6 +123,7 @@ export const userService = {
       }
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(data.password, 12);
 
     return userRepository.create({
@@ -104,7 +135,10 @@ export const userService = {
     });
   },
 
-  // Pembuatan Teknisi oleh Admin Cabang untuk unitnya sendiri
+  // ======================================================
+  // CREATE TECHNICIAN BY ADMIN CABANG
+  // ======================================================
+
   async createTeknisiByUnit(data: CreateTeknisiInput, id_unit: string | null) {
     if (id_unit === null) {
       throw new AppError(
@@ -125,8 +159,12 @@ export const userService = {
     }
 
     const unit = await prisma.unit.findUnique({
-      where: { id_unit },
-      select: { id_unit: true },
+      where: {
+        id_unit,
+      },
+      select: {
+        id_unit: true,
+      },
     });
 
     if (!unit) {
@@ -144,9 +182,14 @@ export const userService = {
     });
   },
 
+  // ======================================================
+  // UPDATE USER
+  // ======================================================
+
   async update(id_user: string, data: UpdateUserInput) {
     const currentUser = await this.findById(id_user);
 
+    // Cek username duplikat
     if (data.username !== undefined) {
       const existingUser = await userRepository.findByUsername(data.username);
 
@@ -160,18 +203,21 @@ export const userService = {
     }
 
     const nextRole = data.role ?? currentUser.role;
+
     const nextUnit =
       data.id_unit !== undefined ? data.id_unit : currentUser.id_unit;
 
-    if (nextRole === "admin_pusat" && nextUnit != null) {
+    // Admin Pusat dan Pimpinan tidak boleh terikat unit
+    if (isGlobalRole(nextRole) && nextUnit != null) {
       throw new AppError(
         400,
         "INVALID_USER_UNIT",
-        "Admin pusat tidak boleh terikat pada unit",
+        "Role ini tidak boleh terikat pada unit",
       );
     }
 
-    if (nextRole !== "admin_pusat" && nextUnit == null) {
+    // Admin Cabang dan Teknisi wajib memiliki unit
+    if (!isGlobalRole(nextRole) && nextUnit == null) {
       throw new AppError(
         400,
         "USER_UNIT_REQUIRED",
@@ -179,10 +225,15 @@ export const userService = {
       );
     }
 
+    // Validasi unit
     if (nextUnit != null) {
       const unit = await prisma.unit.findUnique({
-        where: { id_unit: nextUnit },
-        select: { id_unit: true },
+        where: {
+          id_unit: nextUnit,
+        },
+        select: {
+          id_unit: true,
+        },
       });
 
       if (!unit) {
@@ -190,8 +241,11 @@ export const userService = {
       }
     }
 
-    const updateData: UpdateUserInput = { ...data };
+    const updateData: UpdateUserInput = {
+      ...data,
+    };
 
+    // Hash password jika diperbarui
     if (updateData.password !== undefined) {
       updateData.password = await bcrypt.hash(updateData.password, 12);
     }
