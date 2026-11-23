@@ -4,13 +4,14 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 enum UserRole {
   admin_pusat
   admin_cabang
   teknisi
+  pimpinan
 
   @@map("user_role")
 }
