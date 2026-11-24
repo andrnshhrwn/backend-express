@@ -3,6 +3,11 @@ import type { Request, Response, NextFunction } from "express";
 import { AppError } from "../../shared/errors/app-error";
 import { success } from "../../shared/http/response";
 
+import {
+  deleteObjectsFromSupabase,
+  type UploadedStorageFile,
+} from "../../middlewares/upload";
+
 import { penggantianWmService } from "./penggantian-wm.service";
 
 import type {
@@ -11,6 +16,10 @@ import type {
   PerbaikiPenggantianWmInput,
   ListPenggantianWmQuery,
 } from "./penggantian-wm.validator";
+
+type RequestWithUploadedStorageFiles = Request & {
+  uploadedStorageFiles?: UploadedStorageFile[];
+};
 
 function getParamId(req: Request, key: string, message: string): string {
   const id = req.params[key];
@@ -22,24 +31,24 @@ function getParamId(req: Request, key: string, message: string): string {
   return id;
 }
 
-function getUploadedFiles(req: Request) {
-  const files = req.files;
-
-  if (!files || Array.isArray(files)) {
-    return {
-      fotoWmLama: undefined,
-      fotoWmBaru: undefined,
-    };
-  }
+function getUploadedStorageFiles(req: Request) {
+  const files =
+    (req as RequestWithUploadedStorageFiles).uploadedStorageFiles ?? [];
 
   return {
-    fotoWmLama: files.foto_wm_lama?.[0],
-    fotoWmBaru: files.foto_wm_baru?.[0],
+    fotoWmLama: files.find((file) => file.fieldname === "foto_wm_lama"),
+    fotoWmBaru: files.find((file) => file.fieldname === "foto_wm_baru"),
   };
 }
 
 function hasPerbaikanData(input: PerbaikiPenggantianWmInput): boolean {
   return Object.values(input).some((value) => value !== undefined);
+}
+
+async function cleanupUploadedFiles(
+  files: UploadedStorageFile[],
+): Promise<void> {
+  await deleteObjectsFromSupabase(files.map((file) => file.path));
 }
 
 export const penggantianWmController = {
@@ -58,7 +67,7 @@ export const penggantianWmController = {
         data: result,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -75,7 +84,7 @@ export const penggantianWmController = {
         data: result,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
@@ -94,12 +103,20 @@ export const penggantianWmController = {
         data,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   },
 
+  // ===================================================
   // TAHAP 1: DATA WM LAMA
+  // ===================================================
+
   async submitDataWmLama(req: Request, res: Response, next: NextFunction) {
+    const uploadedFiles =
+      (req as RequestWithUploadedStorageFiles).uploadedStorageFiles ?? [];
+
+    let databaseSaved = false;
+
     try {
       if (!req.user) {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
@@ -111,7 +128,7 @@ export const penggantianWmController = {
         "ID penugasan tidak valid.",
       );
 
-      const fotoWmLama = req.file;
+      const { fotoWmLama } = getUploadedStorageFiles(req);
 
       if (!fotoWmLama) {
         throw new AppError(
@@ -123,27 +140,43 @@ export const penggantianWmController = {
 
       const input = req.body as SubmitDataWmLamaInput;
 
-      const pathImageWmLama = `/uploads/penggantian-wm/${fotoWmLama.filename}`;
-
       const data = await penggantianWmService.submitDataWmLama(
         idPenugasan,
         input,
-        pathImageWmLama,
+        fotoWmLama.path,
         req.user.id_user,
+      );
+
+      databaseSaved = true;
+
+      // Ambil ulang detail agar status SPK yang dikirim
+      // merupakan status terbaru setelah transaksi.
+      const refreshedData = await penggantianWmService.getById(
+        data.id_penggantian,
+        req.user,
       );
 
       return success(res, 201, {
         message:
           "Data WM lama berhasil dikonfirmasi. SPK berubah menjadi proses.",
-        data,
+        data: refreshedData,
       });
     } catch (error) {
-      next(error);
+      if (!databaseSaved) {
+        await cleanupUploadedFiles(uploadedFiles);
+      }
+      return next(error);
     }
   },
 
+  // ===================================================
   // TAHAP 2: SELESAIKAN PEMASANGAN WM BARU
+  // ===================================================
+
   async selesaikan(req: Request, res: Response, next: NextFunction) {
+    const uploadedFiles =
+      (req as RequestWithUploadedStorageFiles).uploadedStorageFiles ?? [];
+
     try {
       if (!req.user) {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
@@ -151,7 +184,7 @@ export const penggantianWmController = {
 
       const idPenggantian = getParamId(req, "id", "ID BAP tidak valid.");
 
-      const fotoWmBaru = req.file;
+      const { fotoWmBaru } = getUploadedStorageFiles(req);
 
       if (!fotoWmBaru) {
         throw new AppError(
@@ -163,27 +196,37 @@ export const penggantianWmController = {
 
       const input = req.body as SelesaikanPenggantianWmInput;
 
-      const pathImageWmBaru = `/uploads/penggantian-wm/${fotoWmBaru.filename}`;
-
       const data = await penggantianWmService.selesaikan(
         idPenggantian,
         input,
-        pathImageWmBaru,
+        fotoWmBaru.path,
         req.user.id_user,
+      );
+
+      const refreshedData = await penggantianWmService.getById(
+        data.id_penggantian,
+        req.user,
       );
 
       return success(res, 200, {
         message:
           "Pekerjaan berhasil diselesaikan. BAP menunggu validasi Admin Pusat.",
-        data,
+        data: refreshedData,
       });
     } catch (error) {
-      next(error);
+      await cleanupUploadedFiles(uploadedFiles);
+      return next(error);
     }
   },
 
+  // ===================================================
   // PERBAIKAN DAN PENGAJUAN ULANG BAP
+  // ===================================================
+
   async perbaiki(req: Request, res: Response, next: NextFunction) {
+    const uploadedFiles =
+      (req as RequestWithUploadedStorageFiles).uploadedStorageFiles ?? [];
+
     try {
       if (!req.user) {
         throw new AppError(401, "UNAUTHORIZED", "Autentikasi diperlukan.");
@@ -191,7 +234,7 @@ export const penggantianWmController = {
 
       const idPenggantian = getParamId(req, "id", "ID BAP tidak valid.");
 
-      const { fotoWmLama, fotoWmBaru } = getUploadedFiles(req);
+      const { fotoWmLama, fotoWmBaru } = getUploadedStorageFiles(req);
 
       const input = req.body as PerbaikiPenggantianWmInput;
 
@@ -203,19 +246,11 @@ export const penggantianWmController = {
         );
       }
 
-      const pathImageWmLama = fotoWmLama
-        ? `/uploads/penggantian-wm/${fotoWmLama.filename}`
-        : undefined;
-
-      const pathImageWmBaru = fotoWmBaru
-        ? `/uploads/penggantian-wm/${fotoWmBaru.filename}`
-        : undefined;
-
       const data = await penggantianWmService.perbaiki(
         idPenggantian,
         input,
-        pathImageWmLama,
-        pathImageWmBaru,
+        fotoWmLama?.path,
+        fotoWmBaru?.path,
         req.user.id_user,
       );
 
@@ -225,7 +260,8 @@ export const penggantianWmController = {
         data,
       });
     } catch (error) {
-      next(error);
+      await cleanupUploadedFiles(uploadedFiles);
+      return next(error);
     }
   },
 };
