@@ -145,7 +145,13 @@ export const cleanupPenggantianWmFilesOnError: ErrorRequestHandler = (
     }
   }
 
-  const uniquePaths = [...new Set(uploadedFiles.map((file) => file.path))];
+  const uniquePaths = [
+    ...new Set(
+      uploadedFiles
+        .map((file) => file.path)
+        .filter((filePath): filePath is string => Boolean(filePath)),
+    ),
+  ];
 
   void Promise.all(
     uniquePaths.map((filePath) => unlink(filePath).catch(() => undefined)),

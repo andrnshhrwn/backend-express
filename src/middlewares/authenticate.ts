@@ -6,12 +6,17 @@ import { AppError } from "../shared/errors/app-error";
 import { canAccess } from "../config/accessPolicy";
 
 const uuidSchema = z.uuid();
-const userRoleSchema = z.enum(["admin_pusat", "admin_cabang", "teknisi"]);
+const userRoleSchema = z.enum([
+  "admin_pusat",
+  "admin_cabang",
+  "teknisi",
+  "pimpinan",
+]);
 const platformSchema = z.enum(["web", "android"]);
 
 export interface AuthUser {
   id_user: string;
-  role: "admin_pusat" | "admin_cabang" | "teknisi";
+  role: "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
   id_unit: string | null;
   platform: "web" | "android";
 }
@@ -82,13 +87,13 @@ export function authenticate(
     };
 
     next();
-  } catch {
-    next(
-      new AppError(
-        401,
-        "INVALID_TOKEN",
-        "Token tidak valid atau sudah kedaluwarsa",
-      ),
-    );
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      return next(
+        new AppError(401, "TOKEN_EXPIRED", "Token sudah kedaluwarsa"),
+      );
+    }
+
+    next(new AppError(401, "INVALID_TOKEN", "Token autentikasi tidak valid"));
   }
 }

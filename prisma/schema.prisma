@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-mysql"
 }
 
 datasource db {
@@ -11,6 +11,7 @@ enum UserRole {
   admin_pusat
   admin_cabang
   teknisi
+  pimpinan
 
   @@map("user_role")
 }
@@ -98,6 +99,7 @@ model User {
   penugasan_dibuat  Penugasan[]     @relation("PenugasanCreator")
   penugasan_teknisi Penugasan[]     @relation("PenugasanTeknisi")
   bap_teknisi       PenggantianWm[] @relation("PenggantianTeknisi")
+  refresh_tokens    RefreshToken[]
 
   @@map("user")
 }
@@ -110,7 +112,7 @@ model PengirimanWm {
   total_wm         Int       @default(0)
   catatan          String?   @db.Text
   id_user_pencatat String    @map("id_user_pusat") @db.Char(36)
-  created_at       DateTime? @default(now()) @db.DateTime(0)
+  created_at       DateTime? @default(now()) @db.Timestamp(0)
 
   unit_tujuan   Unit @relation("UnitTujuan", fields: [id_unit_tujuan], references: [id_unit])
   user_pencatat User @relation("PengirimanCreator", fields: [id_user_pencatat], references: [id_user])
@@ -156,7 +158,7 @@ model Penugasan {
   nomor_spk         String          @unique @db.VarChar(50)
   id_pelanggan      String          @db.Char(36)
   id_unit           String          @db.Char(36)
-  tgl_penugasan     DateTime        @default(now()) @db.DateTime(0)
+  tgl_penugasan     DateTime        @default(now()) @db.Timestamp(0)
   alasan            String          @db.VarChar(255)
   id_user_penugasan String          @db.Char(36)
   status            PenugasanStatus @default(pending)
@@ -187,7 +189,7 @@ model PenggantianWm {
   no_seri_wm_baru    String?   @unique @db.VarChar(50)
   stand_awal_wm_baru Int?
   path_image_wm_baru String?   @db.VarChar(255)
-  tgl_penggantian    DateTime? @db.DateTime(0)
+  tgl_penggantian    DateTime? @db.Timestamp(0)
   id_merk            String?   @db.Char(36)
 
   id_teknisi        String           @db.Char(36)
@@ -207,4 +209,21 @@ model SpkSequence {
   last_number Int    @default(0)
 
   @@map("spk_sequences")
+}
+
+model RefreshToken {
+  id_refresh String    @id @default(uuid()) @db.Char(36)
+  id_user    String    @db.Char(36)
+  token_hash String    @unique @db.Char(64)
+  family_id  String    @db.Char(36)
+  platform   String    @db.VarChar(10)
+  expires_at DateTime  @db.Timestamp(0)
+  revoked_at DateTime? @db.Timestamp(0)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+
+  user User @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
+
+  @@index([id_user])
+  @@index([family_id])
+  @@map("refresh_token")
 }
