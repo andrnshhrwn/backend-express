@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma";
-import type { Prisma } from "../../generated/prisma/client";
+import type { Prisma } from "../../generated/prisma-mysql/client";
 
 export const laporanRepository = {
   async pengiriman(
@@ -17,15 +17,36 @@ export const laporanRepository = {
           unit_tujuan: { select: { kode_unit: true, nama_unit: true } },
           user_pencatat: { select: { fullname: true } },
           details: {
-            include: { merk: { select: { kode_wm: true, merk_wm: true } } },
+            include: {
+              merk: { select: { kode_wm: true, merk_wm: true } },
+            },
           },
         },
       }),
       prisma.pengirimanWm.count({ where }),
-      prisma.pengirimanWm.aggregate({ where, _sum: { total_wm: true } }),
+      prisma.pengirimanWm.aggregate({
+        where,
+        _sum: { total_wm: true },
+      }),
     ]);
 
     return { items, total, totalWm: agg._sum.total_wm ?? 0 };
+  },
+
+  async pengirimanExport(where: Prisma.PengirimanWmWhereInput) {
+    return prisma.pengirimanWm.findMany({
+      where,
+      orderBy: [{ tgl_pengiriman: "desc" }, { created_at: "desc" }],
+      include: {
+        unit_tujuan: { select: { kode_unit: true, nama_unit: true } },
+        user_pencatat: { select: { fullname: true } },
+        details: {
+          include: {
+            merk: { select: { kode_wm: true, merk_wm: true } },
+          },
+        },
+      },
+    });
   },
 
   async penugasan(
@@ -41,7 +62,11 @@ export const laporanRepository = {
         orderBy: { tgl_penugasan: "desc" },
         include: {
           pelanggan: {
-            select: { id_pelanggan_pdam: true, nama: true, alamat: true },
+            select: {
+              id_pelanggan_pdam: true,
+              nama: true,
+              alamat: true,
+            },
           },
           unit: { select: { kode_unit: true, nama_unit: true } },
           pembuat: { select: { fullname: true } },
@@ -57,6 +82,25 @@ export const laporanRepository = {
     ]);
 
     return { items, total, grouped };
+  },
+
+  async penugasanExport(where: Prisma.PenugasanWhereInput) {
+    return prisma.penugasan.findMany({
+      where,
+      orderBy: { tgl_penugasan: "desc" },
+      include: {
+        pelanggan: {
+          select: {
+            id_pelanggan_pdam: true,
+            nama: true,
+            alamat: true,
+          },
+        },
+        unit: { select: { kode_unit: true, nama_unit: true } },
+        pembuat: { select: { fullname: true } },
+        teknisi: { select: { fullname: true } },
+      },
+    });
   },
 
   async penggantian(
@@ -75,7 +119,11 @@ export const laporanRepository = {
             select: {
               nomor_spk: true,
               pelanggan: {
-                select: { id_pelanggan_pdam: true, nama: true, alamat: true },
+                select: {
+                  id_pelanggan_pdam: true,
+                  nama: true,
+                  alamat: true,
+                },
               },
               unit: { select: { kode_unit: true, nama_unit: true } },
             },
@@ -93,5 +141,29 @@ export const laporanRepository = {
     ]);
 
     return { items, total, grouped };
+  },
+
+  async penggantianExport(where: Prisma.PenggantianWmWhereInput) {
+    return prisma.penggantianWm.findMany({
+      where,
+      orderBy: [{ tgl_penggantian: "desc" }, { id_penggantian: "desc" }],
+      include: {
+        penugasan: {
+          select: {
+            nomor_spk: true,
+            pelanggan: {
+              select: {
+                id_pelanggan_pdam: true,
+                nama: true,
+                alamat: true,
+              },
+            },
+            unit: { select: { kode_unit: true, nama_unit: true } },
+          },
+        },
+        teknisi: { select: { fullname: true } },
+        merk: { select: { kode_wm: true, merk_wm: true } },
+      },
+    });
   },
 };
