@@ -5,10 +5,10 @@ import { authorize } from "../../middlewares/authorize";
 import { validate } from "../../middlewares/validate";
 
 import {
-  cleanupPenggantianWmFilesOnError,
   uploadFotoWmLama,
   uploadFotoWmBaru,
   uploadFotoPerbaikanBap,
+  attachUploadedStorageFiles,
 } from "../../middlewares/upload";
 
 import { penggantianWmController } from "./penggantian-wm.controller";
@@ -64,6 +64,7 @@ router.post(
   uploadFotoWmLama,
   validate(penugasanIdSchema, "params"),
   validate(submitDataWmLamaSchema),
+  attachUploadedStorageFiles,
   penggantianWmController.submitDataWmLama,
 );
 
@@ -77,6 +78,7 @@ router.post(
   uploadFotoWmBaru,
   validate(penggantianWmIdSchema, "params"),
   validate(selesaikanPenggantianWmSchema),
+  attachUploadedStorageFiles,
   penggantianWmController.selesaikan,
 );
 
@@ -90,9 +92,8 @@ router.patch(
   uploadFotoPerbaikanBap,
   validate(penggantianWmIdSchema, "params"),
   validate(perbaikiPenggantianWmSchema),
+  attachUploadedStorageFiles,
   penggantianWmController.perbaiki,
 );
-
-router.use(cleanupPenggantianWmFilesOnError);
 
 export default router;

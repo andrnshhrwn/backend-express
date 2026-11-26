@@ -9,6 +9,8 @@ export const envSchema = z.object({
 
   API_PREFIX: z.string().default("/api/v1"),
 
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
+
   JWT_SECRET: z.string().min(32),
 
   JWT_EXPIRES_IN: z.string().default("1d"),
@@ -19,13 +21,11 @@ export const envSchema = z.object({
 
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(2097152),
 
-  FRONTEND_URL: z.string().default("http://localhost:3000"),
+  SUPABASE_URL: z.url(),
 
-  // SUPABASE_URL: z.url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 
-  // SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-
-  // SUPABASE_STORAGE_BUCKET: z.string().min(1).default("penggantian-wm"),
+  SUPABASE_STORAGE_BUCKET: z.string().min(1).default("penggantian-wm"),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

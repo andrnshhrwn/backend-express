@@ -5,7 +5,7 @@ interface ExcelOptions {
   sheetName: string;
   title: string;
   exportedAt: Date;
-  /** Filter tanggal yang dipakai (format YYYY-MM-DD). Kosong = semua periode. */
+
   period?: { dari?: string | null; sampai?: string | null };
   summary: Record<string, string | number>;
   columns: string[];
@@ -77,7 +77,6 @@ function formatLongDate(value: string): string {
   }).format(new Date(`${value}T00:00:00Z`));
 }
 
-/** Teks periode dinamis berdasarkan filter tanggal. */
 export function formatPeriod(dari?: string | null, sampai?: string | null) {
   if (dari && sampai) {
     return dari === sampai
@@ -182,21 +181,18 @@ function createSummaryWorksheet(options: ExcelOptions) {
   ];
   worksheet["!rows"] = rowHeights;
 
-  // Judul utama
   styleRange(worksheet, 0, 0, 0, 1, {
     font: { name: FONT, bold: true, sz: 18, color: { rgb: COLORS.white } },
     fill: { fgColor: { rgb: COLORS.navy } },
     alignment: { vertical: "center", horizontal: "left", indent: 1 },
   });
 
-  // Sub judul
   styleRange(worksheet, 1, 1, 0, 1, {
     font: { name: FONT, sz: 12, color: { rgb: COLORS.white } },
     fill: { fgColor: { rgb: COLORS.blue } },
     alignment: { vertical: "center", horizontal: "left", indent: 1 },
   });
 
-  // Judul seksi
   for (const r of [3, 7]) {
     styleRange(worksheet, r, r, 0, 1, {
       font: { name: FONT, bold: true, sz: 11, color: { rgb: COLORS.white } },
@@ -205,7 +201,6 @@ function createSummaryWorksheet(options: ExcelOptions) {
     });
   }
 
-  // Header tabel ringkasan
   styleRange(worksheet, 8, 8, 0, 1, {
     font: { name: FONT, bold: true, sz: 11, color: { rgb: COLORS.white } },
     fill: { fgColor: { rgb: COLORS.blue } },
@@ -213,7 +208,6 @@ function createSummaryWorksheet(options: ExcelOptions) {
     border: headerBorder,
   });
 
-  // Informasi ekspor
   for (const r of [4, 5]) {
     setCellStyle(worksheet, XLSX.utils.encode_cell({ r, c: 0 }), {
       font: { name: FONT, bold: true, sz: 11, color: { rgb: COLORS.text } },
@@ -229,7 +223,6 @@ function createSummaryWorksheet(options: ExcelOptions) {
     });
   }
 
-  // Isi ringkasan
   summaryEntries.forEach(([, value], i) => {
     const r = 9 + i;
     const background = i % 2 === 0 ? COLORS.white : COLORS.zebra;
@@ -298,8 +291,6 @@ function createDataWorksheet(options: ExcelOptions) {
     return { wch: Math.min(Math.max(maxDataWidth + 4, 14), 45) };
   });
 
-  // Tinggi baris data sengaja tidak diset agar Excel menyesuaikan otomatis
-  // untuk teks yang di-wrap.
   worksheet["!rows"] = [{ hpt: 32 }, { hpt: 22 }, { hpt: 10 }, { hpt: 32 }];
 
   styleRange(worksheet, 0, 0, 0, columnCount - 1, {
@@ -314,7 +305,6 @@ function createDataWorksheet(options: ExcelOptions) {
     alignment: { vertical: "center", horizontal: "left", indent: 1 },
   });
 
-  // Header tabel (baris ke-4)
   styleRange(worksheet, 3, 3, 0, columnCount - 1, {
     font: { name: FONT, bold: true, sz: 11, color: { rgb: COLORS.white } },
     fill: { fgColor: { rgb: COLORS.blue } },
@@ -322,7 +312,6 @@ function createDataWorksheet(options: ExcelOptions) {
     border: headerBorder,
   });
 
-  // Baris data: zebra, angka rata kanan, tanggal rata tengah, teks rata kiri
   for (let r = 0; r < options.rows.length; r++) {
     const excelRow = r + 4;
     const background = r % 2 === 0 ? COLORS.white : COLORS.zebra;
