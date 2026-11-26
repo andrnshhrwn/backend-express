@@ -6,23 +6,23 @@ import { env } from "./config/env.js";
 import { errorHandler } from "./middlewares/error-handler.js";
 import { success } from "./shared/http/response.js";
 
-import authRoutes from "./modules/auth/auth.routes";
-import unitRoutes from "./modules/unit/unit.routes";
-import merkWmRoutes from "./modules/merk-wm/merk-wm.routes";
-import tipeTarifRoutes from "./modules/tipe-tarif/tipe-tarif.routes";
+import authRoutes from "./modules/auth/auth.routes.js";
+import unitRoutes from "./modules/unit/unit.routes.js";
+import merkWmRoutes from "./modules/merk-wm/merk-wm.routes.js";
+import tipeTarifRoutes from "./modules/tipe-tarif/tipe-tarif.routes.js";
 
-import pelangganRoutes from "./modules/pelanggan/pelanggan.routes";
-import importPelangganRoutes from "./modules/pelanggan/import-pelanggan.routes";
+import pelangganRoutes from "./modules/pelanggan/pelanggan.routes.js";
+import importPelangganRoutes from "./modules/pelanggan/import-pelanggan.routes.js";
 
-import userRoutes from "./modules/users/user.routes";
-import pengirimanWmRoutes from "./modules/pengiriman-wm/pengiriman-wm.routes";
-import penugasanRoutes from "./modules/penugasan/penugasan.routes";
-import penggantianWmRoutes from "./modules/penggantian-wm/penggantian-wm.routes";
-import validasiRoutes from "./modules/validasi/validasi.routes";
+import userRoutes from "./modules/users/user.routes.js";
+import pengirimanWmRoutes from "./modules/pengiriman-wm/pengiriman-wm.routes.js";
+import penugasanRoutes from "./modules/penugasan/penugasan.routes.js";
+import penggantianWmRoutes from "./modules/penggantian-wm/penggantian-wm.routes.js";
+import validasiRoutes from "./modules/validasi/validasi.routes.js";
 
-import dashboardRoutes from "./modules/dashboard/dashboard.routes";
+import dashboardRoutes from "./modules/dashboard/dashboard.routes.js";
 
-import laporanRoutes from "./modules/laporan/laporan.routes";
+import laporanRoutes from "./modules/laporan/laporan.routes.js";
 
 export const app = express();
 

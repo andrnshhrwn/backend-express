@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { pelangganController } from "./pelanggan.controller";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { pelangganController } from "./pelanggan.controller.js";
 import {
   validateCreatePelanggan,
   validatePelangganId,
   validateUpdatePelanggan,
-} from "./pelanggan.validator";
+} from "./pelanggan.validator.js";
 
 const router = Router();
 

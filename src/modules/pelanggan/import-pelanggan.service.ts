@@ -1,12 +1,12 @@
 import * as XLSX from "xlsx";
-import { Prisma } from "../../generated/prisma/client";
-import { prisma } from "../../lib/prisma";
-import { AppError } from "../../shared/errors/app-error";
+import { Prisma } from "../../generated/prisma/client.js";
+import { prisma } from "../../lib/prisma.js";
+import { AppError } from "../../shared/errors/app-error.js";
 import {
   importPelangganRowSchema,
   type ImportPelangganRow,
   type ConfirmImportPelangganInput,
-} from "./import-pelanggan.validator";
+} from "./import-pelanggan.validator.js";
 
 // ======================================================
 // TYPES

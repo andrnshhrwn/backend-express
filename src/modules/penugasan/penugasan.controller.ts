@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { penugasanService } from "./penugasan.service";
-import { success } from "../../shared/http/response";
-import { AppError } from "../../shared/errors/app-error";
+import { penugasanService } from "./penugasan.service.js";
+import { success } from "../../shared/http/response.js";
+import { AppError } from "../../shared/errors/app-error.js";
 
 function getPenugasanId(req: Request): string {
   const id = req.params.id;

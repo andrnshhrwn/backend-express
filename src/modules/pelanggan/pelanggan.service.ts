@@ -1,6 +1,6 @@
-import { AppError } from "../../shared/errors/app-error";
-import { pelangganRepository } from "./pelanggan.repository";
-import { prisma } from "../../lib/prisma";
+import { AppError } from "../../shared/errors/app-error.js";
+import { pelangganRepository } from "./pelanggan.repository.js";
+import { prisma } from "../../lib/prisma.js";
 
 type CreatePelangganInput = {
   id_pelanggan_pdam: string;

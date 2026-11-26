@@ -6,7 +6,7 @@ import type { RequestHandler } from "express";
 import { createClient } from "@supabase/supabase-js";
 
 import { env } from "../config/env.js";
-import { AppError } from "../shared/errors/app-error";
+import { AppError } from "../shared/errors/app-error.js";
 
 // =====================================================
 // SUPABASE STORAGE CLIENT

@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { tipeTarifController } from "./tipe-tarif.controller";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { tipeTarifController } from "./tipe-tarif.controller.js";
 import {
   validateCreateTipeTarif,
   validateUpdateTipeTarif,
   validateTipeTarifId,
-} from "./tipe-tarif.validator";
+} from "./tipe-tarif.validator.js";
 
 const router = Router();
 

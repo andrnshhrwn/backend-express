@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { validate } from "../../middlewares/validate";
+import { validate } from "../../middlewares/validate.js";
 
 const pengirimanDetailSchema = z.object({
   id_merk: z.uuid("ID merk WM harus berupa UUID yang valid."),

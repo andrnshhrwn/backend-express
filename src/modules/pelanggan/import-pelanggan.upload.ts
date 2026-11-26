@@ -1,6 +1,6 @@
 import multer from "multer";
 import path from "node:path";
-import { AppError } from "../../shared/errors/app-error";
+import { AppError } from "../../shared/errors/app-error.js";
 
 const uploadImportFile = multer({
   storage: multer.memoryStorage(),

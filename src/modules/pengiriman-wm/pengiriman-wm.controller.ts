@@ -1,8 +1,8 @@
 
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import type { AuthUser } from "../../middlewares/authenticate";
-import { pengirimanWmService } from "./pengiriman-wm.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import type { AuthUser } from "../../middlewares/authenticate.js";
+import { pengirimanWmService } from "./pengiriman-wm.service.js";
 
 function getAuthUser(req: Request): AuthUser {
   if (!req.user) {

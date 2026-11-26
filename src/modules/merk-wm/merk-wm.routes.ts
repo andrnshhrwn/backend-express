@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { merkWmController } from "./merk-wm.controller";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { merkWmController } from "./merk-wm.controller.js";
 import {
   validateCreateMerkWm,
   validateUpdateMerkWm,
   validateMerkWmId,
-} from "./merk-wm.validator";
+} from "./merk-wm.validator.js";
 
 const router = Router();
 

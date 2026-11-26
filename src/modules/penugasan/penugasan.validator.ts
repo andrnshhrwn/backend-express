@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { validate } from "../../middlewares/validate";
+import { validate } from "../../middlewares/validate.js";
 
 const penugasanIdSchema = z.object({
   id: z.uuid("ID penugasan harus berupa UUID yang valid"),

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { pelangganService } from "./pelanggan.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import { pelangganService } from "./pelanggan.service.js";
 
 function getPelangganId(req: Request): string {
   const id = req.params.id;

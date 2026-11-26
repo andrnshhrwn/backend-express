@@ -200,9 +200,9 @@
 //   },
 // };
 import bcrypt from "bcrypt";
-import { AppError } from "../../shared/errors/app-error";
-import { prisma } from "../../lib/prisma";
-import { userRepository } from "./user.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { prisma } from "../../lib/prisma.js";
+import { userRepository } from "./user.repository.js";
 
 type UserRole = "admin_pusat" | "admin_cabang" | "teknisi" | "pimpinan";
 

@@ -1,7 +1,7 @@
-import type { Prisma } from "../../generated/prisma/client";
-import { prisma } from "../../lib/prisma";
+import type { Prisma } from "../../generated/prisma/client.js";
+import { prisma } from "../../lib/prisma.js";
 
-import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
+import type { TolakBapInput, ValidasiQuery } from "./validasi.validator.js";
 
 type ReadScope =
   | {

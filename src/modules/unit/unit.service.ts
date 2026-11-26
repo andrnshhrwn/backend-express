@@ -1,5 +1,5 @@
-import { AppError } from "../../shared/errors/app-error";
-import { unitRepository } from "./unit.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { unitRepository } from "./unit.repository.js";
 
 export const unitService = {
   async findAll() {

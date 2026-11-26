@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { unitController } from "./unit.controller";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { unitController } from "./unit.controller.js";
 import {
   validateCreateUnit,
   validateUpdateUnit,
   validateUnitId,
-} from "./unit.validator";
+} from "./unit.validator.js";
 
 const router = Router();
 

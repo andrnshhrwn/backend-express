@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { success } from "../../shared/http/response";
-import { importPelangganService } from "./import-pelanggan.service";
-import type { ConfirmImportPelangganInput } from "./import-pelanggan.validator";
+import { AppError } from "../../shared/errors/app-error.js";
+import { success } from "../../shared/http/response.js";
+import { importPelangganService } from "./import-pelanggan.service.js";
+import type { ConfirmImportPelangganInput } from "./import-pelanggan.validator.js";
 
 export const importPelangganController = {
   preview: async (req: Request, res: Response, next: NextFunction) => {

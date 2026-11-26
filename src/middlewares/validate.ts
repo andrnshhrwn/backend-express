@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import type { ZodType } from "zod";
-import { AppError } from "../shared/errors/app-error";
+import { AppError } from "../shared/errors/app-error.js";
 
 type ValidateTarget = "body" | "params" | "query";
 

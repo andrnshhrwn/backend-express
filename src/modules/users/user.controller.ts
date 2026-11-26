@@ -126,8 +126,8 @@
 // };
 
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { userService } from "./user.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import { userService } from "./user.service.js";
 
 function getUserId(req: Request): string {
   const id = req.params.id;

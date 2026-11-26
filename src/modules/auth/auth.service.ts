@@ -2,11 +2,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import crypto from "node:crypto";
 import { z } from "zod";
-import { env } from "../../config/env";
-import { AppError } from "../../shared/errors/app-error";
-import { authRepository } from "./auth.repository";
-import { canAccess } from "../../config/accessPolicy";
-import { prisma } from "../../lib/prisma";
+import { env } from "../../config/env.js";
+import { AppError } from "../../shared/errors/app-error.js";
+import { authRepository } from "./auth.repository.js";
+import { canAccess } from "../../config/accessPolicy.js";
+import { prisma } from "../../lib/prisma.js";
 
 const platformSchema = z.enum(["web", "android"]);
 

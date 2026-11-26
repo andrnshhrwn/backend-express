@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
-import { dashboardService } from "./dashboard.service";
-import { success } from "../../shared/http/response";
-import { AppError } from "../../shared/errors/app-error";
+import { dashboardService } from "./dashboard.service.js";
+import { success } from "../../shared/http/response.js";
+import { AppError } from "../../shared/errors/app-error.js";
 
 function getQueryString(value: unknown): string | undefined {
   return typeof value === "string" ? value : undefined;

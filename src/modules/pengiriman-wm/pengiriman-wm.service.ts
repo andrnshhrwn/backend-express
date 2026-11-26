@@ -1,7 +1,7 @@
-import { AppError } from "../../shared/errors/app-error";
-import { prisma } from "../../lib/prisma";
-import type { AuthUser } from "../../middlewares/authenticate";
-import { pengirimanWmRepository } from "./pengiriman-wm.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { prisma } from "../../lib/prisma.js";
+import type { AuthUser } from "../../middlewares/authenticate.js";
+import { pengirimanWmRepository } from "./pengiriman-wm.repository.js";
 
 type DetailPengirimanInput = {
   id_merk: string;

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { authService } from "./auth.service";
-import { AppError } from "../../shared/errors/app-error";
+import { authService } from "./auth.service.js";
+import { AppError } from "../../shared/errors/app-error.js";
 
 function getRefreshToken(req: Request): string {
   const token = req.body?.refresh_token;

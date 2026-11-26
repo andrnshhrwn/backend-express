@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { validate } from "../../middlewares/validate";
-import { importPelangganController } from "./import-pelanggan.controller";
-import { uploadPelangganImport } from "./import-pelanggan.upload";
-import { confirmImportPelangganSchema } from "./import-pelanggan.validator";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { validate } from "../../middlewares/validate.js";
+import { importPelangganController } from "./import-pelanggan.controller.js";
+import { uploadPelangganImport } from "./import-pelanggan.upload.js";
+import { confirmImportPelangganSchema } from "./import-pelanggan.validator.js";
 
 const router = Router();
 

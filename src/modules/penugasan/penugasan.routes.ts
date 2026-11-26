@@ -1,15 +1,15 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
 
 import {
   validatePenugasanId,
   validateCreatePenugasan,
   validateUpdatePenugasan,
   validateAssignTeknisi,
-} from "./penugasan.validator";
+} from "./penugasan.validator.js";
 
-import { penugasanController } from "./penugasan.controller";
+import { penugasanController } from "./penugasan.controller.js";
 
 const router = Router();
 

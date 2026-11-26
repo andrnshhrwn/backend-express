@@ -1,5 +1,5 @@
-import { AppError } from "../../shared/errors/app-error";
-import { tipeTarifRepository } from "./tipe-tarif.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { tipeTarifRepository } from "./tipe-tarif.repository.js";
 
 type TipeTarifInput = {
   kode_tarif: string;

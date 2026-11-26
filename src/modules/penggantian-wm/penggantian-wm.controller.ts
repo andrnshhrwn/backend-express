@@ -1,21 +1,21 @@
 import type { Request, Response, NextFunction } from "express";
 
-import { AppError } from "../../shared/errors/app-error";
-import { success } from "../../shared/http/response";
+import { AppError } from "../../shared/errors/app-error.js";
+import { success } from "../../shared/http/response.js";
 
 import {
   deleteObjectsFromSupabase,
   type UploadedStorageFile,
-} from "../../middlewares/upload";
+} from "../../middlewares/upload.js";
 
-import { penggantianWmService } from "./penggantian-wm.service";
+import { penggantianWmService } from "./penggantian-wm.service.js";
 
 import type {
   SubmitDataWmLamaInput,
   SelesaikanPenggantianWmInput,
   PerbaikiPenggantianWmInput,
   ListPenggantianWmQuery,
-} from "./penggantian-wm.validator";
+} from "./penggantian-wm.validator.js";
 
 type RequestWithUploadedStorageFiles = Request & {
   uploadedStorageFiles?: UploadedStorageFile[];

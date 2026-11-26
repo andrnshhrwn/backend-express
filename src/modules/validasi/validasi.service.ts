@@ -1,7 +1,7 @@
-import { AppError } from "../../shared/errors/app-error";
-import { validasiRepository } from "./validasi.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { validasiRepository } from "./validasi.repository.js";
 
-import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
+import type { TolakBapInput, ValidasiQuery } from "./validasi.validator.js";
 
 type ReadScope =
   | {
