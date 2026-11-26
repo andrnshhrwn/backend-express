@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { prisma } from "../../lib/prisma";
-import type { Prisma } from "../../generated/prisma/client";
-=======
 import { prisma } from "../../lib/prisma.js";
 import type { Prisma } from "../../generated/prisma-mysql/client.js";
->>>>>>> prod
 
 export const laporanRepository = {
   async pengiriman(

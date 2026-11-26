@@ -1,14 +1,7 @@
-<<<<<<< HEAD
-import type { Prisma } from "../../generated/prisma/client";
-import { AppError } from "../../shared/errors/app-error";
-import type { AuthUser } from "../../middlewares/authenticate";
-import { laporanRepository } from "./laporan.repository";
-=======
 import type { Prisma } from "../../generated/prisma-mysql/client.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import type { AuthUser } from "../../middlewares/authenticate.js";
 import { laporanRepository } from "./laporan.repository.js";
->>>>>>> prod
 import {
   createExcelFile,
   formatDateOnly,
