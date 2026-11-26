@@ -1,4 +1,4 @@
-import type { Prisma } from "../../generated/prisma-mysql/client.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import type { AuthUser } from "../../middlewares/authenticate.js";
 import { laporanRepository } from "./laporan.repository.js";

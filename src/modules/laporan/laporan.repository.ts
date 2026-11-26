@@ -1,5 +1,5 @@
 import { prisma } from "../../lib/prisma.js";
-import type { Prisma } from "../../generated/prisma-mysql/client.js";
+import type { Prisma } from "../../generated/prisma/client.js";
 
 export const laporanRepository = {
   async pengiriman(
