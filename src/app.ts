@@ -77,3 +77,4 @@ app.use(env.API_PREFIX, (_req, res) => {
 });
 
 app.use(errorHandler);
+export default app;
