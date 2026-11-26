@@ -8,13 +8,15 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8000),
 
   API_PREFIX: z.string().default("/api/v1"),
+  
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
 
   JWT_SECRET: z.string().min(32),
-
+  
   JWT_EXPIRES_IN: z.string().default("1d"),
-
+  
   REFRESH_EXPIRES_DAYS: z.coerce.number().int().positive().default(7),
-
+  
   UPLOAD_DIR: z.string().default("uploads"),
 
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(2097152),
