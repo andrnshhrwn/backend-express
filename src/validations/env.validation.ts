@@ -19,6 +19,8 @@ export const envSchema = z.object({
 
   MAX_FILE_SIZE: z.coerce.number().int().positive().default(2097152),
 
+  FRONTEND_URL: z.string().default("http://localhost:3000"),
+
   // SUPABASE_URL: z.url(),
 
   // SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
