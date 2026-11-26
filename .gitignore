@@ -9,3 +9,4 @@ src/generated/prisma-mysql
 skills-lock.json
 prisma/migrations
 prisma/migrations-mysql
+docs/
