@@ -1,12 +1,12 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { success } from "../../shared/http/response";
-import { laporanService } from "./laporan.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import { success } from "../../shared/http/response.js";
+import { laporanService } from "./laporan.service.js";
 import {
   pengirimanQuerySchema,
   penugasanQuerySchema,
   penggantianQuerySchema,
-} from "./laporan.validator";
+} from "./laporan.validator.js";
 
 function requireUser(req: Request) {
   if (!req.user) {

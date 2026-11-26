@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
 
-import { AppError } from "../../shared/errors/app-error";
-import { success } from "../../shared/http/response";
+import { AppError } from "../../shared/errors/app-error.js";
+import { success } from "../../shared/http/response.js";
 
-import { validasiService } from "./validasi.service";
+import { validasiService } from "./validasi.service.js";
 
-import type { TolakBapInput, ValidasiQuery } from "./validasi.validator";
+import type { TolakBapInput, ValidasiQuery } from "./validasi.validator.js";
 
 type ReadScope =
   | {

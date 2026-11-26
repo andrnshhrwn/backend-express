@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { AppError } from "../errors/app-error";
+import { AppError } from "../errors/app-error.js";
 
 export function getStringParam(req: Request, key: string): string {
   const value = req.params[key];

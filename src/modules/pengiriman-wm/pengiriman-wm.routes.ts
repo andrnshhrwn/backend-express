@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { pengirimanWmController } from "./pengiriman-wm.controller";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { pengirimanWmController } from "./pengiriman-wm.controller.js";
 import {
   validateCreatePengiriman,
   validateUpdatePengiriman,
   validatePengirimanId,
-} from "./pengiriman-wm.validator";
+} from "./pengiriman-wm.validator.js";
 
 const router = Router();
 

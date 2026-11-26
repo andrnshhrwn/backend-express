@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { merkWmService } from "./merk-wm.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import { merkWmService } from "./merk-wm.service.js";
 
 function getMerkWmId(req: Request): string {
   const id = req.params.id;

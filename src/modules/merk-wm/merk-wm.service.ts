@@ -1,5 +1,5 @@
-import { AppError } from "../../shared/errors/app-error";
-import { merkWmRepository } from "./merk-wm.repository";
+import { AppError } from "../../shared/errors/app-error.js";
+import { merkWmRepository } from "./merk-wm.repository.js";
 
 type MerkWmInput = {
   kode_wm: string;

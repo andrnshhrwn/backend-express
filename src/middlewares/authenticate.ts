@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { z } from "zod";
-import { env } from "../config/env";
-import { AppError } from "../shared/errors/app-error";
-import { canAccess } from "../config/accessPolicy";
+import { env } from "../config/env.js";
+import { AppError } from "../shared/errors/app-error.js";
+import { canAccess } from "../config/accessPolicy.js";
 
 const uuidSchema = z.uuid();
 const userRoleSchema = z.enum([

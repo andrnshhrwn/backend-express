@@ -1,6 +1,6 @@
-import type { AuthUser } from "../../middlewares/authenticate";
-import { AppError } from "../../shared/errors/app-error";
-import { penugasanRepository } from "./penugasan.repository";
+import type { AuthUser } from "../../middlewares/authenticate.js";
+import { AppError } from "../../shared/errors/app-error.js";
+import { penugasanRepository } from "./penugasan.repository.js";
 
 type CreatePenugasanInput = {
   id_pelanggan: string;

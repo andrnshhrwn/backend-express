@@ -1,6 +1,6 @@
-import type { AuthUser } from "../../middlewares/authenticate";
-import { AppError } from "../../shared/errors/app-error";
-import { dashboardRepository } from "./dashboard.repository";
+import type { AuthUser } from "../../middlewares/authenticate.js";
+import { AppError } from "../../shared/errors/app-error.js";
+import { dashboardRepository } from "./dashboard.repository.js";
 
 type DashboardScope = {
   id_unit?: string;

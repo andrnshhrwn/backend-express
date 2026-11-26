@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { validate } from "../../middlewares/validate";
+import { validate } from "../../middlewares/validate.js";
 
 export const loginSchema = z.object({
   username: z.string().trim().min(1, "Username wajib diisi"),

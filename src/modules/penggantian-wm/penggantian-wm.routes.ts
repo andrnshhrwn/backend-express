@@ -1,17 +1,17 @@
 import { Router } from "express";
 
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { validate } from "../../middlewares/validate";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { validate } from "../../middlewares/validate.js";
 
 import {
   uploadFotoWmLama,
   uploadFotoWmBaru,
   uploadFotoPerbaikanBap,
   attachUploadedStorageFiles,
-} from "../../middlewares/upload";
+} from "../../middlewares/upload.js";
 
-import { penggantianWmController } from "./penggantian-wm.controller";
+import { penggantianWmController } from "./penggantian-wm.controller.js";
 
 import {
   penugasanIdSchema,
@@ -20,7 +20,7 @@ import {
   selesaikanPenggantianWmSchema,
   perbaikiPenggantianWmSchema,
   listPenggantianWmQuerySchema,
-} from "./penggantian-wm.validator";
+} from "./penggantian-wm.validator.js";
 
 const router = Router();
 

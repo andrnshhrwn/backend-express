@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { tipeTarifService } from "./tipe-tarif.service";
-import { getStringParam } from "../../shared/utils/params";
+import { tipeTarifService } from "./tipe-tarif.service.js";
+import { getStringParam } from "../../shared/utils/params.js";
 
 export const tipeTarifController = {
   async findAll(

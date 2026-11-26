@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../shared/errors/app-error";
-import type { AuthUser } from "./authenticate";
+import { AppError } from "../shared/errors/app-error.js";
+import type { AuthUser } from "./authenticate.js";
 
 export function authorize(...allowedRoles: AuthUser["role"][]) {
   return (req: Request, _res: Response, next: NextFunction): void => {

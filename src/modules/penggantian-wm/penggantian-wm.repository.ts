@@ -1,12 +1,12 @@
-import type { Prisma } from "../../generated/prisma/client";
-import { prisma } from "../../lib/prisma";
+import type { Prisma } from "../../generated/prisma/client.js";
+import { prisma } from "../../lib/prisma.js";
 
 import type {
   SubmitDataWmLamaInput,
   SelesaikanPenggantianWmInput,
   PerbaikiPenggantianWmInput,
   ListPenggantianWmQuery,
-} from "./penggantian-wm.validator";
+} from "./penggantian-wm.validator.js";
 
 type PenggantianWmAccessScope = {
   id_unit?: string;

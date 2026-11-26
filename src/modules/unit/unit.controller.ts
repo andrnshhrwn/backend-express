@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { AppError } from "../../shared/errors/app-error";
-import { unitService } from "./unit.service";
+import { AppError } from "../../shared/errors/app-error.js";
+import { unitService } from "./unit.service.js";
 
 function getUnitId(req: Request): string {
   const id = req.params.id;

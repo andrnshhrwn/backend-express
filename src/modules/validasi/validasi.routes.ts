@@ -1,16 +1,16 @@
 import { Router } from "express";
 
-import { authenticate } from "../../middlewares/authenticate";
-import { authorize } from "../../middlewares/authorize";
-import { validate } from "../../middlewares/validate";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
+import { validate } from "../../middlewares/validate.js";
 
-import { validasiController } from "./validasi.controller";
+import { validasiController } from "./validasi.controller.js";
 
 import {
   tolakBapSchema,
   validasiIdSchema,
   validasiQuerySchema,
-} from "./validasi.validator";
+} from "./validasi.validator.js";
 
 const router = Router();
 
