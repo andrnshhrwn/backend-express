@@ -1,4 +1,4 @@
-import type { Prisma } from "../../generated/prisma-mysql/client";
+import type { Prisma } from "../../generated/prisma/client";
 import { AppError } from "../../shared/errors/app-error";
 import type { AuthUser } from "../../middlewares/authenticate";
 import { laporanRepository } from "./laporan.repository";
