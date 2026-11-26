@@ -1,5 +1,5 @@
 import * as XLSX from "xlsx";
-import { Prisma } from "../../generated/prisma-mysql/client";
+import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { AppError } from "../../shared/errors/app-error";
 import {

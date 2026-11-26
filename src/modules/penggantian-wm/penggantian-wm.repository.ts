@@ -1,4 +1,4 @@
-import type { Prisma } from "../../generated/prisma-mysql/client";
+import type { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
 import type {

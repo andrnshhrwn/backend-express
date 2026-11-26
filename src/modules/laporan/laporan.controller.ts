@@ -134,8 +134,4 @@ export const laporanController = {
       next(error);
     }
   },
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> prod

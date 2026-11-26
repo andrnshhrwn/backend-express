@@ -1,12 +1,7 @@
 import "dotenv/config";
-<<<<<<< HEAD
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
-import { PrismaClient } from "../generated/prisma-mysql/client.js";
-=======
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.js";
->>>>>>> prod
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
